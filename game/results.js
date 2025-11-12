@@ -1,6 +1,86 @@
 // Results Screen
 function loadResultsScreen(playerWon) {
     const container = document.getElementById('game-container');
+
+    // Check if results screen already exists
+    const existingResults = container.querySelector('.results-screen');
+
+    if (existingResults) {
+        // Update existing elements
+        updateResultsScreenElements(existingResults, playerWon);
+    } else {
+        // Initial render - create full results screen
+        renderFullResultsScreen(container, playerWon);
+    }
+}
+
+function updateResultsScreenElements(resultsScreen, playerWon) {
+    const monster = gameState.currentMonster;
+    const resultClass = playerWon ? 'victory' : 'defeat';
+    const resultTitle = playerWon ? 'VICTORY!' : 'DEFEAT';
+
+    // Update result class
+    resultsScreen.className = `results-screen ${resultClass} fade-in`;
+
+    // Update title
+    const titleElement = resultsScreen.querySelector('h2');
+    if (titleElement) {
+        titleElement.textContent = resultTitle;
+    }
+
+    // Calculate tokens earned
+    let tokensEarned = 0;
+    if (playerWon) {
+        tokensEarned = monster.isBoss ? GAME_CONFIG.tokenRewards.bossWin : GAME_CONFIG.tokenRewards.waveWin;
+    }
+
+    const waveText = monster.isBoss ? 'Boss Fight' : `Wave ${gameState.currentWave}`;
+
+    // Update results info
+    const resultsInfo = resultsScreen.querySelector('.results-info');
+    if (resultsInfo) {
+        resultsInfo.innerHTML = `
+            <p><strong>${waveText}:</strong> ${monster.name}</p>
+            ${playerWon ? `
+                <p><strong>Flip Tokens Earned:</strong> ${tokensEarned}</p>
+                <p style="margin-top: 20px;"><strong>Total Flip Tokens:</strong> ${gameState.flipPoints}</p>
+                ${monster.isBoss && gameState.characters.find(c => c.id === 2).unlocked ? '<p style="color: #ffa500; margin-top: 10px;">Bear already unlocked!</p>' : ''}
+            ` : `
+                <p>You were defeated...</p>
+                <p>Return to the menu to spend your tokens!</p>
+                <p style="margin-top: 20px;"><strong>Total Flip Tokens:</strong> ${gameState.flipPoints}</p>
+            `}
+        `;
+    }
+
+    // Update action buttons
+    const resultsActions = resultsScreen.querySelector('.results-actions');
+    if (resultsActions) {
+        let actionsHTML;
+        if (playerWon) {
+            if (monster.isBoss) {
+                const bearChar = gameState.characters.find(c => c.id === 2);
+                const canCapture = !bearChar.unlocked;
+                actionsHTML = `
+                    ${canCapture ? '<button class="btn btn-success" onclick="captureMonster()">Capture Bear</button>' : ''}
+                    <button class="btn btn-secondary" onclick="returnToMenu()">End Run</button>
+                `;
+            } else {
+                actionsHTML = `
+                    <button class="btn btn-primary" onclick="continueToNextWave()">Next Wave</button>
+                    <button class="btn btn-secondary" onclick="returnToMenu()">End Run</button>
+                `;
+            }
+        } else {
+            actionsHTML = `
+                <button class="btn btn-secondary" onclick="returnToMenu()">Return to Menu</button>
+            `;
+        }
+        resultsActions.innerHTML = actionsHTML;
+    }
+}
+
+function renderFullResultsScreen(container, playerWon) {
     const monster = gameState.currentMonster;
 
     const resultClass = playerWon ? 'victory' : 'defeat';

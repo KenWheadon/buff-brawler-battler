@@ -4,10 +4,10 @@ function loadTitleScreen() {
 
   container.innerHTML = `
         <div class="title-screen fade-in">
-            <h1>BUFF BRAWL</h1>
+            <img src="images/title-logo.png" alt="Buff Bara Battler" class="title-logo">
             <div class="button-group">
                 <button class="btn btn-primary" onclick="startRun()">Start Run</button>
-                <button class="btn btn-primary" onclick="loadCharacterGallery()">Character Gallery</button>
+                <button class="btn btn-secondary" onclick="loadCharacterGallery()">Character Gallery</button>
             </div>
             <div style="margin-top: 20px; font-size: 12px; color: #888;">
                 Flip Tokens: ${gameState.flipPoints}

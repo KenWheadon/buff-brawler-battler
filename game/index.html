@@ -1,24 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen">
-    <title>Buff Brawl</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-fullscreen"
+    />
+    <title>Buff Bara Battler</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div id="landscape-warning">
-        <div class="warning-content">
-            <h2>Please Rotate Your Device</h2>
-            <p>This game is best played in landscape mode</p>
-            <div class="rotate-icon">📱 ↻</div>
-        </div>
+      <div class="warning-content">
+        <h2>Please Rotate Your Device</h2>
+        <p>This game is best played in landscape mode</p>
+        <div class="rotate-icon">📱 ↻</div>
+      </div>
     </div>
     <div id="game-wrapper">
-        <div id="game-container"></div>
+      <div id="game-container"></div>
     </div>
 
     <!-- Load scripts -->
@@ -30,61 +36,61 @@
     <script src="results.js"></script>
 
     <script>
-        // Global game state
-        let gameState;
+      // Global game state
+      let gameState;
 
-        // Responsive scaling function
-        function scaleGameContainer() {
-            const container = document.getElementById('game-container');
-            const wrapper = document.getElementById('game-wrapper');
+      // Responsive scaling function
+      function scaleGameContainer() {
+        const container = document.getElementById("game-container");
+        const wrapper = document.getElementById("game-wrapper");
 
-            if (!container || !wrapper) return;
+        if (!container || !wrapper) return;
 
-            const targetWidth = 1400;
-            const targetHeight = 1020;
-            const padding = 20; // Padding around the game
+        const targetWidth = 1400;
+        const targetHeight = 1020;
+        const padding = 20; // Padding around the game
 
-            const availableWidth = window.innerWidth - padding;
-            const availableHeight = window.innerHeight - padding;
+        const availableWidth = window.innerWidth - padding;
+        const availableHeight = window.innerHeight - padding;
 
-            // Calculate scale to fit both width and height
-            const scaleX = availableWidth / targetWidth;
-            const scaleY = availableHeight / targetHeight;
-            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
+        // Calculate scale to fit both width and height
+        const scaleX = availableWidth / targetWidth;
+        const scaleY = availableHeight / targetHeight;
+        const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
 
-            // Apply the scale
-            container.style.setProperty('--game-scale', scale);
-            container.style.transform = `scale(${scale})`;
-        }
+        // Apply the scale
+        container.style.setProperty("--game-scale", scale);
+        container.style.transform = `scale(${scale})`;
+      }
 
-        // Initialize game on page load
-        function initializeGame() {
-            // Load or create game state
-            gameState = initializeGameState();
+      // Initialize game on page load
+      function initializeGame() {
+        // Load or create game state
+        gameState = initializeGameState();
 
-            // Load title screen
-            loadTitleScreen();
+        // Load title screen
+        loadTitleScreen();
 
-            // Setup responsive scaling
-            scaleGameContainer();
-            window.addEventListener('resize', scaleGameContainer);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(scaleGameContainer, 100);
-            });
+        // Setup responsive scaling
+        scaleGameContainer();
+        window.addEventListener("resize", scaleGameContainer);
+        window.addEventListener("orientationchange", () => {
+          setTimeout(scaleGameContainer, 100);
+        });
 
-            // Auto-save on page unload
-            window.addEventListener('beforeunload', () => {
-                saveGameState(gameState);
-            });
+        // Auto-save on page unload
+        window.addEventListener("beforeunload", () => {
+          saveGameState(gameState);
+        });
 
-            // Auto-save periodically (every 30 seconds)
-            setInterval(() => {
-                saveGameState(gameState);
-            }, 30000);
-        }
+        // Auto-save periodically (every 30 seconds)
+        setInterval(() => {
+          saveGameState(gameState);
+        }, 30000);
+      }
 
-        // Start the game
-        window.addEventListener('DOMContentLoaded', initializeGame);
+      // Start the game
+      window.addEventListener("DOMContentLoaded", initializeGame);
     </script>
-</body>
+  </body>
 </html>

@@ -260,13 +260,13 @@ function updateCombatScreenElements(combatScreen, data) {
     });
 
     // Update turn indicator
-    const turnIndicator = combatScreen.querySelector('div[style*="font-weight: bold"]');
+    const turnIndicator = combatScreen.querySelector('div[style*="font-weight: bold"][style*="color: #000"]');
     if (turnIndicator) {
         turnIndicator.textContent = isPlayerTurn ? "Your turn!" : "Enemy's turn...";
     }
 
     // Update combat log
-    const logDiv = combatScreen.querySelector('div[style*="font-size: 12px"]');
+    const logDiv = combatScreen.querySelector('div[style*="font-size: 11px"]');
     if (logDiv) {
         const logHTML = combatState.combatLog.slice(-3).map(msg => `<div>${msg}</div>`).join('');
         logDiv.innerHTML = logHTML;
@@ -353,11 +353,11 @@ function renderFullCombatScreen(container, data) {
                 </div>
             </div>
 
-            <div style="text-align: center; margin-top: 20px; min-height: 60px;">
-                <div style="font-weight: bold; color: #667eea; margin-bottom: 10px;">
+            <div style="text-align: center; margin-top: auto; padding-top: 10px; flex-shrink: 0;">
+                <div style="font-weight: bold; color: #000; margin-bottom: 5px; font-size: 16px;">
                     ${isPlayerTurn ? "Your turn!" : "Enemy's turn..."}
                 </div>
-                <div style="font-size: 12px; color: #666;">
+                <div style="font-size: 11px; color: #333; max-height: 45px; overflow-y: auto;">
                     ${logHTML}
                 </div>
             </div>

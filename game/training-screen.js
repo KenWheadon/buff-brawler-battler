@@ -44,7 +44,105 @@ function generateCardGrid() {
 function renderTrainingScreen(character, config, bonus, flippedCount, canLevelUp) {
     const container = document.getElementById('game-container');
 
-    // Calculate next flip cost (1, 2, 3, 4...)
+    // Check if training screen already exists
+    const existingTrainingScreen = container.querySelector('.training-screen');
+
+    if (existingTrainingScreen) {
+        // Update existing elements
+        updateTrainingScreenElements(existingTrainingScreen, character, config, bonus, flippedCount, canLevelUp);
+    } else {
+        // Initial render - create full training screen
+        renderFullTrainingScreen(container, character, config, bonus, flippedCount, canLevelUp);
+    }
+}
+
+function updateTrainingScreenElements(trainingScreen, character, config, bonus, flippedCount, canLevelUp) {
+    const nextFlipCost = flippedCount + 1;
+
+    // Calculate current stats including card bonuses
+    let totalHp = Math.floor(config.baseHp * bonus);
+    let totalAttack = Math.floor(config.baseAttack * bonus);
+    let totalDefense = Math.floor(config.baseDefense * bonus);
+    let totalSpeed = Math.floor(config.baseSpeed * bonus);
+
+    // Add bonuses from flipped cards
+    character.flippedCards.forEach((flipped, index) => {
+        if (flipped && character.cardGrid[index].type === 'power') {
+            const card = character.cardGrid[index];
+            if (card.stat === 'attack') totalAttack += card.value;
+            if (card.stat === 'defense') totalDefense += card.value;
+            if (card.stat === 'speed') totalSpeed += card.value;
+        }
+    });
+
+    // Update stats display
+    const statsDisplay = trainingScreen.querySelector('.stats-display');
+    if (statsDisplay) {
+        statsDisplay.innerHTML = `
+            <div class="stat-item">HP: ${totalHp}</div>
+            <div class="stat-item">Attack: ${totalAttack}</div>
+            <div class="stat-item">Defense: ${totalDefense}</div>
+            <div class="stat-item">Speed: ${totalSpeed}</div>
+        `;
+    }
+
+    // Update flip points
+    const flipPoints = trainingScreen.querySelector('.flip-points');
+    if (flipPoints) {
+        flipPoints.innerHTML = `
+            Flip Tokens: ${gameState.flipPoints}
+            ${flippedCount < 9 ? `<br><small>Next flip costs: ${nextFlipCost}</small>` : ''}
+        `;
+    }
+
+    // Update individual cards (only update changed cards)
+    const cardElements = trainingScreen.querySelectorAll('.card');
+    character.flippedCards.forEach((flipped, index) => {
+        const cardElement = cardElements[index];
+        if (!cardElement) return;
+
+        const wasFlipped = cardElement.classList.contains('flipped');
+        if (flipped && !wasFlipped) {
+            // Card was just flipped - update it
+            const card = character.cardGrid[index];
+            cardElement.classList.add('flipped');
+
+            if (card.type === 'blank') {
+                cardElement.classList.add('blank-card');
+                cardElement.innerHTML = '<span style="font-size: 48px; color: #000;">—</span>';
+            } else {
+                const iconPath = card.stat === 'attack' ? 'images/icon-attack.png' :
+                                 card.stat === 'defense' ? 'images/icon-defense.png' :
+                                 'images/icon-speed.png';
+                cardElement.innerHTML = `
+                    <img src="${iconPath}" alt="${card.stat}" class="card-icon">
+                    <div class="card-value">+${card.value}</div>
+                `;
+            }
+        }
+    });
+
+    // Update cards flipped counter
+    const cardsFlippedText = trainingScreen.querySelector('.text-center.mb-20');
+    if (cardsFlippedText) {
+        cardsFlippedText.innerHTML = `
+            Cards Flipped: ${flippedCount}/9
+            ${canLevelUp ? '<br><strong style="color: #28a745;">Ready to Level Up!</strong>' : ''}
+        `;
+    }
+
+    // Update action buttons
+    const trainingActions = trainingScreen.querySelector('.training-actions');
+    if (trainingActions) {
+        trainingActions.innerHTML = `
+            <button class="btn btn-secondary" onclick="exitTraining()">Back</button>
+            ${canLevelUp ? '<button class="btn btn-success" onclick="levelUpCharacter()">Level Up!</button>' : ''}
+            <button class="btn btn-primary" onclick="selectCharacterAndExit()">Select</button>
+        `;
+    }
+}
+
+function renderFullTrainingScreen(container, character, config, bonus, flippedCount, canLevelUp) {
     const nextFlipCost = flippedCount + 1;
 
     // Calculate current stats including card bonuses
