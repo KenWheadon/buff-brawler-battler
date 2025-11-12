@@ -9,9 +9,11 @@ function loadCharacterGallery() {
         const isLocked = !char.unlocked;
         const unlockedMoves = config.moves.slice(0, char.level);
 
+        const portraitImage = config.images[char.level];
         return `
             <div class="character-card ${isLocked ? 'locked' : 'unlocked'}"
                  onclick="${isLocked ? '' : `selectCharacterForTraining(${char.id})`}">
+                ${!isLocked ? `<img src="${portraitImage}" alt="${config.name}" class="character-portrait">` : ''}
                 <h4>${config.name}</h4>
                 <div class="level">Level ${char.level}</div>
                 ${isLocked ? '<p>🔒 LOCKED</p>' : `
@@ -33,12 +35,14 @@ function loadCharacterGallery() {
     const currentConfig = GAME_CONFIG.characters.find(c => c.id === current.id);
     const currentBonus = GAME_CONFIG.levelBonuses[current.level];
     const currentUnlockedMoves = currentConfig.moves.slice(0, current.level);
+    const currentPortrait = currentConfig.images[current.level];
 
     container.innerHTML = `
         <div class="character-gallery fade-in">
             <h2>Character Gallery</h2>
 
             <div class="current-character">
+                <img src="${currentPortrait}" alt="${currentConfig.name}" class="current-character-portrait">
                 <h3>Current Character</h3>
                 <h4>${currentConfig.name} - Level ${current.level}</h4>
                 <div class="stats">

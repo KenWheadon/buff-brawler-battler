@@ -122,6 +122,7 @@ function startBossFight() {
         speed: Math.floor(boss.baseSpeed * boss.statsMultiplier),
         moves: boss.moves,
         image: boss.image,
+        icon: boss.icon,
         isBoss: true
     };
 

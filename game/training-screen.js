@@ -65,14 +65,19 @@ function renderTrainingScreen(character, config, bonus, flippedCount, canLevelUp
 
     const cardsHTML = character.flippedCards.map((flipped, index) => {
         const card = character.cardGrid[index];
-        let cardContent = '?';
+        let cardContent = '';
 
         if (flipped) {
             if (card.type === 'blank') {
-                cardContent = '—';
+                cardContent = '<span style="font-size: 48px; color: #000;">—</span>';
             } else {
-                const statSymbol = card.stat === 'attack' ? '⚔️' : card.stat === 'defense' ? '🛡️' : '⚡';
-                cardContent = `${statSymbol}<br>+${card.value}`;
+                const iconPath = card.stat === 'attack' ? 'images/icon-attack.png' :
+                                 card.stat === 'defense' ? 'images/icon-defense.png' :
+                                 'images/icon-speed.png';
+                cardContent = `
+                    <img src="${iconPath}" alt="${card.stat}" class="card-icon">
+                    <div class="card-value">+${card.value}</div>
+                `;
             }
         }
 

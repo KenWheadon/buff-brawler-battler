@@ -16,7 +16,16 @@ const GAME_CONFIG = {
       baseSpeed: 15,
       baseHp: 50,
       unlockedByDefault: true,
-      image: "images/wolf-portrait.png",
+      images: {
+        1: "images/wolf-level1.png",
+        2: "images/wolf-level2.png",
+        3: "images/wolf-level3.png"
+      },
+      icons: {
+        1: "images/wolf-level1-icon.png",
+        2: "images/wolf-level2-icon.png",
+        3: "images/wolf-level3-icon.png"
+      },
       moves: [
         {
           name: "Claw",
@@ -51,7 +60,16 @@ const GAME_CONFIG = {
       baseSpeed: 10,
       baseHp: 40,
       unlockedByDefault: false,
-      image: "images/bear-portrait.png",
+      images: {
+        1: "images/bear-level1.png",
+        2: "images/bear-level2.png",
+        3: "images/bear-level3.png"
+      },
+      icons: {
+        1: "images/bear-level1-icon.png",
+        2: "images/bear-level2-icon.png",
+        3: "images/bear-level3-icon.png"
+      },
       moves: [
         {
           name: "Slam",
@@ -90,6 +108,7 @@ const GAME_CONFIG = {
       defense: 5,
       speed: 10,
       image: "images/enemy-wave1.png",
+      icon: "images/enemy-wave1-icon.png",
       moves: [{ name: "Scratch", damage: 5, type: "physical" }],
     },
     {
@@ -100,6 +119,7 @@ const GAME_CONFIG = {
       defense: 8,
       speed: 8,
       image: "images/enemy-wave2.png",
+      icon: "images/enemy-wave2-icon.png",
       moves: [{ name: "Punch", damage: 8, type: "physical" }],
     },
     {
@@ -110,6 +130,7 @@ const GAME_CONFIG = {
       defense: 10,
       speed: 12,
       image: "images/enemy-wave3.png",
+      icon: "images/enemy-wave3-icon.png",
       moves: [{ name: "Heavy Blow", damage: 12, type: "physical" }],
     },
   ],
@@ -123,7 +144,8 @@ const GAME_CONFIG = {
     baseDefense: 10,
     baseSpeed: 10,
     statsMultiplier: 1.5,
-    image: "images/bear-boss.png",
+    image: "images/bear-level1.png",
+    icon: "images/bear-level1-icon.png",
     moves: [
       {
         name: "Slam",

@@ -35,10 +35,7 @@ All assets should be placed in the `images/` folder.
 
 ### Card Grid Assets
 - `card-back.png` - Unflipped card appearance (for 3x3 grid)
-- `card-front-atk.png` - Revealed card showing ATK bonus
-- `card-front-def.png` - Revealed card showing DEF bonus
-- `card-front-spd.png` - Revealed card showing SPD bonus
-- `card-front-blank.png` - Revealed blank card
+- `card-front.png` - Blank revealed card front (stat icons overlay on this)
 
 ### Icons
 - `icon-hp.png` - HP stat icon
@@ -49,7 +46,7 @@ All assets should be placed in the `images/` folder.
 - `icon-lock.png` - Locked character indicator
 - `icon-unlock.png` - Unlocked character indicator
 
-### Move Icons (Optional)
+### Move Icons
 - `move-claw.png` - Wolf's Claw attack icon
 - `move-dash.png` - Wolf's Dash move icon
 - `move-roar.png` - Wolf's Roar move icon
@@ -60,21 +57,10 @@ All assets should be placed in the `images/` folder.
 ## Background Assets
 
 - `bg-title.png` - Title screen background
-- `bg-gallery.png` - Character gallery background
 - `bg-training.png` - Training screen background
 - `bg-combat.png` - Combat arena background
-- `bg-victory.png` - Victory results background
-- `bg-defeat.png` - Defeat results background
 
-## Special Effects (Optional)
-
-- `effect-hit.png` - Hit/damage effect sprite
-- `effect-block.png` - Block/defend effect sprite
-- `effect-buff.png` - Buff/stat increase effect sprite
-- `effect-debuff.png` - Debuff/stat decrease effect sprite
-- `effect-levelup.png` - Level up celebration effect
-
-## Total Asset Count: ~40-45 images
+## Total Asset Count: ~33 images
 
 ### Recommended Sizes:
 - Character portraits: 400x400px

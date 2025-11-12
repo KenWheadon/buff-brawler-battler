@@ -109,16 +109,24 @@ function renderCombatScreen() {
         </button>
     `).join('');
 
+    // Get player icon
+    const playerIcon = config.icons[character.level];
+
     // Show next 5 turns in turn order
-    const turnOrderHTML = combatState.turnQueue.slice(combatState.currentTurnIndex, combatState.currentTurnIndex + 5).map((turn, index) => `
-        <div class="turn-icon ${index === 0 ? 'active' : ''}"
-             style="background: ${turn === 'player' ? '#667eea' : '#dc3545'}; color: white;">
-            ${turn === 'player' ? 'P' : 'M'}
-        </div>
-    `).join('');
+    const turnOrderHTML = combatState.turnQueue.slice(combatState.currentTurnIndex, combatState.currentTurnIndex + 5).map((turn, index) => {
+        const iconSrc = turn === 'player' ? playerIcon : monster.icon || 'images/enemy-icon.png';
+        const turnClass = turn === 'player' ? 'turn-player' : 'turn-enemy';
+        return `
+            <div class="turn-icon ${turnClass} ${index === 0 ? 'active' : ''}">
+                <img src="${iconSrc}" alt="${turn === 'player' ? config.name : monster.name}" class="turn-icon-img">
+            </div>
+        `;
+    }).join('');
 
     // Combat log (last 3 messages)
     const logHTML = combatState.combatLog.slice(-3).map(msg => `<div>${msg}</div>`).join('');
+
+    const playerPortrait = config.images[character.level];
 
     container.innerHTML = `
         <div class="combat-screen fade-in">
@@ -131,6 +139,7 @@ function renderCombatScreen() {
 
             <div class="combatants">
                 <div class="combatant">
+                    <img src="${playerPortrait}" alt="${config.name}" class="combat-portrait">
                     <h3>${config.name} (Lv.${character.level})</h3>
                     <div class="hp-bar">
                         <div class="hp-fill" style="width: ${playerHpPercent}%"></div>
@@ -150,6 +159,7 @@ function renderCombatScreen() {
                 </div>
 
                 <div class="combatant">
+                    <img src="${monster.image}" alt="${monster.name}" class="combat-portrait">
                     <h3>${monster.name}</h3>
                     <div class="hp-bar">
                         <div class="hp-fill" style="width: ${monsterHpPercent}%"></div>

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(start \"\" \"c:\\Users\\kenne\\OneDrive\\Documents\\GitHub\\bara\\index.html\")"
+      "Bash(start \"\" \"c:\\Users\\kenne\\OneDrive\\Documents\\GitHub\\bara\\index.html\")",
+      "Bash(start \"\" \"c:\\Users\\kenne\\OneDrive\\Documents\\GitHub\\buff-brawler-battler\\game\\index.html\")"
     ],
     "deny": [],
     "ask": []
