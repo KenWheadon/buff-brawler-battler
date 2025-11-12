@@ -523,6 +523,9 @@ body {
     transition: all 0.1s ease;
     text-align: left;
     font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .move-btn:hover:not(:disabled) {
@@ -544,6 +547,22 @@ body {
 .move-btn .move-desc {
     font-size: 12px;
     opacity: 0.9;
+}
+
+.move-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border: 2px solid #000;
+    background: #FFF;
+    padding: 4px;
+    flex-shrink: 0;
+}
+
+.move-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 /* Combat Portraits */

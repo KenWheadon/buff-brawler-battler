@@ -184,13 +184,108 @@ function renderCombatScreen() {
     const currentTurn = combatState.turnQueue[combatState.currentTurnIndex];
     const isPlayerTurn = currentTurn === 'player';
 
+    // Check if combat screen already exists
+    const existingCombatScreen = container.querySelector('.combat-screen');
+
+    if (existingCombatScreen) {
+        // Update existing elements without re-rendering entire screen
+        updateCombatScreenElements(existingCombatScreen, {
+            playerHpPercent,
+            monsterHpPercent,
+            isPlayerTurn,
+            config,
+            character,
+            monster
+        });
+    } else {
+        // Initial render - create full combat screen
+        renderFullCombatScreen(container, {
+            playerHpPercent,
+            monsterHpPercent,
+            isPlayerTurn,
+            config,
+            character,
+            monster
+        });
+    }
+}
+
+function updateCombatScreenElements(combatScreen, data) {
+    const { playerHpPercent, monsterHpPercent, isPlayerTurn, config, character, monster } = data;
+
+    // Update HP bars
+    const playerHpFill = combatScreen.querySelector('#player-combatant .hp-fill');
+    const playerHpText = combatScreen.querySelector('#player-combatant .hp-text');
+    const monsterHpFill = combatScreen.querySelector('#monster-combatant .hp-fill');
+    const monsterHpText = combatScreen.querySelector('#monster-combatant .hp-text');
+
+    if (playerHpFill) playerHpFill.style.width = `${playerHpPercent}%`;
+    if (playerHpText) playerHpText.textContent = `${combatState.playerHp} / ${combatState.playerStats.hp}`;
+    if (monsterHpFill) monsterHpFill.style.width = `${monsterHpPercent}%`;
+    if (monsterHpText) monsterHpText.textContent = `${combatState.monsterHp} / ${combatState.monsterStats.hp}`;
+
+    // Update stats
+    const playerStatsDiv = combatScreen.querySelector('#player-combatant > div[style*="margin-top: 10px"]');
+    if (playerStatsDiv) {
+        playerStatsDiv.innerHTML = `
+            <strong>ATK:</strong> ${combatState.playerStats.attack} |
+            <strong>DEF:</strong> ${combatState.playerStats.defense} |
+            <strong>SPD:</strong> ${combatState.playerStats.speed}
+        `;
+    }
+
+    // Update turn order
+    const turnOrderDiv = combatScreen.querySelector('.turn-order');
+    if (turnOrderDiv) {
+        const playerIcon = config.icons[character.level];
+        const turnOrderHTML = combatState.turnQueue.slice(combatState.currentTurnIndex, combatState.currentTurnIndex + 5).map((turn, index) => {
+            const iconSrc = turn === 'player' ? playerIcon : monster.icon || 'images/enemy-icon.png';
+            const turnClass = turn === 'player' ? 'turn-player' : 'turn-enemy';
+            return `
+                <div class="turn-icon ${turnClass} ${index === 0 ? 'active' : ''}">
+                    <img src="${iconSrc}" alt="${turn === 'player' ? config.name : monster.name}" class="turn-icon-img">
+                </div>
+            `;
+        }).join('');
+        turnOrderDiv.innerHTML = `<strong>Turn Order:</strong>${turnOrderHTML}`;
+    }
+
+    // Update move buttons state
+    const unlockedMoves = config.moves.slice(0, character.level);
+    const moveButtons = combatScreen.querySelectorAll('.move-btn');
+    moveButtons.forEach((btn, index) => {
+        if (index < unlockedMoves.length) {
+            btn.disabled = !isPlayerTurn || combatState.isAnimating;
+        }
+    });
+
+    // Update turn indicator
+    const turnIndicator = combatScreen.querySelector('div[style*="font-weight: bold"]');
+    if (turnIndicator) {
+        turnIndicator.textContent = isPlayerTurn ? "Your turn!" : "Enemy's turn...";
+    }
+
+    // Update combat log
+    const logDiv = combatScreen.querySelector('div[style*="font-size: 12px"]');
+    if (logDiv) {
+        const logHTML = combatState.combatLog.slice(-3).map(msg => `<div>${msg}</div>`).join('');
+        logDiv.innerHTML = logHTML;
+    }
+}
+
+function renderFullCombatScreen(container, data) {
+    const { playerHpPercent, monsterHpPercent, isPlayerTurn, config, character, monster } = data;
+
     // Get unlocked moves for this character level
     const unlockedMoves = config.moves.slice(0, character.level);
 
     const movesHTML = unlockedMoves.map((move, index) => `
         <button class="move-btn" onclick="useMove(${index})" ${!isPlayerTurn || combatState.isAnimating ? 'disabled' : ''}>
-            <span class="move-name">${move.name}</span>
-            <span class="move-desc">${move.description} (${move.accuracy}%)</span>
+            ${move.icon ? `<img src="${move.icon}" alt="${move.name}" class="move-icon">` : ''}
+            <div class="move-info">
+                <span class="move-name">${move.name}</span>
+                <span class="move-desc">${move.description} (${move.accuracy}%)</span>
+            </div>
         </button>
     `).join('');
 

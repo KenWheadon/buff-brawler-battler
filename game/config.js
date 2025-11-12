@@ -33,6 +33,7 @@ const GAME_CONFIG = {
           type: "physical",
           accuracy: 100,
           description: "A basic attack",
+          icon: "images/move-claw.png",
         },
         {
           name: "Dash",
@@ -41,6 +42,7 @@ const GAME_CONFIG = {
           accuracy: 90,
           description: "Increase speed",
           effect: { stat: "speed", value: 5 },
+          icon: "images/move-dash.png",
         },
         {
           name: "Roar",
@@ -49,6 +51,7 @@ const GAME_CONFIG = {
           accuracy: 75,
           description: "Decrease opponent defense -10, increase your attack +5",
           effect: { enemyDef: -10, selfAtk: 5 },
+          icon: "images/move-roar.png",
         },
       ],
     },
@@ -77,6 +80,7 @@ const GAME_CONFIG = {
           type: "physical",
           accuracy: 100,
           description: "A powerful attack",
+          icon: "images/move-slam.png",
         },
         {
           name: "Guard",
@@ -85,6 +89,7 @@ const GAME_CONFIG = {
           accuracy: 80,
           description: "Block next attack",
           effect: { blockNext: true },
+          icon: "images/move-guard.png",
         },
         {
           name: "Crush",
@@ -93,6 +98,7 @@ const GAME_CONFIG = {
           accuracy: 75,
           description: "Attack and reduce defense",
           effect: { enemyDef: -5 },
+          icon: "images/icon-crush.png",
         },
       ],
     },
@@ -153,6 +159,7 @@ const GAME_CONFIG = {
         type: "physical",
         accuracy: 100,
         description: "A powerful attack",
+        icon: "images/move-slam.png",
       },
       {
         name: "Guard",
@@ -160,6 +167,7 @@ const GAME_CONFIG = {
         type: "defense",
         accuracy: 80,
         description: "Block next attack",
+        icon: "images/move-guard.png",
       },
       {
         name: "Crush",
@@ -167,6 +175,7 @@ const GAME_CONFIG = {
         type: "physical",
         accuracy: 75,
         description: "Attack and reduce defense",
+        icon: "images/icon-crush.png",
       },
     ],
   },
