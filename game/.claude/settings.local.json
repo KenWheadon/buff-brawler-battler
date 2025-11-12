@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"c:\\Users\\kenne\\OneDrive\\Documents\\GitHub\\bara\\index.html\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
