@@ -8,8 +8,93 @@ let combatState = {
     currentTurnIndex: 0,
     playerSpeed: 0,
     monsterSpeed: 0,
-    combatLog: []
+    combatLog: [],
+    isAnimating: false
 };
+
+// Animation helper functions
+function wiggleElement(selector) {
+    return new Promise(resolve => {
+        const element = document.querySelector(selector);
+        if (!element) {
+            resolve();
+            return;
+        }
+        element.classList.add('wiggle-animation');
+        setTimeout(() => {
+            element.classList.remove('wiggle-animation');
+            resolve();
+        }, 400);
+    });
+}
+
+function createParticle(type, animationName, duration = 600) {
+    return new Promise(resolve => {
+        const particle = document.createElement('div');
+        particle.className = `combat-particle ${type}`;
+        particle.style.animation = `${animationName} ${duration}ms ease-in-out forwards`;
+        document.querySelector('.combat-screen').appendChild(particle);
+
+        setTimeout(() => {
+            particle.remove();
+            resolve();
+        }, duration);
+    });
+}
+
+function createCircularParticle(selector, type) {
+    return new Promise(resolve => {
+        const element = document.querySelector(selector);
+        if (!element) {
+            resolve();
+            return;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const container = document.querySelector('.combat-screen').getBoundingClientRect();
+
+        const particle = document.createElement('div');
+        particle.className = `combat-particle ${type}`;
+        particle.style.position = 'absolute';
+        particle.style.left = `${rect.left - container.left + rect.width / 2}px`;
+        particle.style.top = `${rect.top - container.top + rect.height / 2}px`;
+        particle.style.animation = 'circular-buff 1s ease-in-out forwards';
+
+        document.querySelector('.combat-screen').appendChild(particle);
+
+        setTimeout(() => {
+            particle.remove();
+            resolve();
+        }, 1000);
+    });
+}
+
+function showEffectText(selector, text, type) {
+    return new Promise(resolve => {
+        const element = document.querySelector(selector);
+        if (!element) {
+            resolve();
+            return;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const container = document.querySelector('.combat-screen').getBoundingClientRect();
+
+        const effectText = document.createElement('div');
+        effectText.className = `effect-text ${type}`;
+        effectText.textContent = text;
+        effectText.style.left = `${rect.left - container.left + rect.width / 2}px`;
+        effectText.style.top = `${rect.top - container.top + rect.height / 2}px`;
+        effectText.style.transform = 'translateX(-50%)';
+
+        document.querySelector('.combat-screen').appendChild(effectText);
+
+        setTimeout(() => {
+            effectText.remove();
+            resolve();
+        }, 1000);
+    });
+}
 
 function loadCombatScreen() {
     const character = gameState.currentCharacter;
@@ -103,7 +188,7 @@ function renderCombatScreen() {
     const unlockedMoves = config.moves.slice(0, character.level);
 
     const movesHTML = unlockedMoves.map((move, index) => `
-        <button class="move-btn" onclick="useMove(${index})" ${!isPlayerTurn ? 'disabled' : ''}>
+        <button class="move-btn" onclick="useMove(${index})" ${!isPlayerTurn || combatState.isAnimating ? 'disabled' : ''}>
             <span class="move-name">${move.name}</span>
             <span class="move-desc">${move.description} (${move.accuracy}%)</span>
         </button>
@@ -138,8 +223,8 @@ function renderCombatScreen() {
             </div>
 
             <div class="combatants">
-                <div class="combatant">
-                    <img src="${playerPortrait}" alt="${config.name}" class="combat-portrait">
+                <div class="combatant" id="player-combatant">
+                    <img src="${playerPortrait}" alt="${config.name}" class="combat-portrait" id="player-portrait">
                     <h3>${config.name} (Lv.${character.level})</h3>
                     <div class="hp-bar">
                         <div class="hp-fill" style="width: ${playerHpPercent}%"></div>
@@ -158,8 +243,8 @@ function renderCombatScreen() {
                     </div>
                 </div>
 
-                <div class="combatant">
-                    <img src="${monster.image}" alt="${monster.name}" class="combat-portrait">
+                <div class="combatant" id="monster-combatant">
+                    <img src="${monster.image}" alt="${monster.name}" class="combat-portrait" id="monster-portrait">
                     <h3>${monster.name}</h3>
                     <div class="hp-bar">
                         <div class="hp-fill" style="width: ${monsterHpPercent}%"></div>
@@ -185,9 +270,11 @@ function renderCombatScreen() {
     `;
 }
 
-function useMove(moveIndex) {
+async function useMove(moveIndex) {
     const currentTurn = combatState.turnQueue[combatState.currentTurnIndex];
-    if (currentTurn !== 'player') return;
+    if (currentTurn !== 'player' || combatState.isAnimating) return;
+
+    combatState.isAnimating = true;
 
     const character = gameState.currentCharacter;
     const monster = gameState.currentMonster;
@@ -196,53 +283,142 @@ function useMove(moveIndex) {
 
     // Check accuracy
     const roll = Math.random() * 100;
-    if (roll > move.accuracy) {
+    const missed = roll > move.accuracy;
+
+    if (missed) {
+        // Miss animation: just wiggle and show miss
+        await wiggleElement('#player-portrait');
+        await showEffectText('#monster-portrait', 'MISS!', 'miss');
         combatState.combatLog.push(`${config.name}'s ${move.name} missed!`);
+        combatState.isAnimating = false;
         advanceTurn();
         return;
     }
 
-    // Calculate damage: ATK - (DEF% of damage)
-    // Formula: Damage = Move.damage - (Move.damage * (DEF / 100))
-    if (move.damage > 0) {
-        const defense = combatState.monsterStats.defense;
-        const defenseReduction = move.damage * (defense / 100);
-        const actualDamage = Math.max(1, Math.floor(combatState.playerStats.attack + move.damage - defenseReduction));
+    // Determine move type
+    const isBuffOnly = move.damage === 0 && move.effect && (move.effect.stat || move.effect.selfAtk || move.effect.blockNext);
+    const hasDamage = move.damage > 0;
+    const hasDebuff = move.effect && (move.effect.enemyDef || move.effect.enemyDef === 0);
 
-        combatState.monsterHp = Math.max(0, combatState.monsterHp - actualDamage);
-        combatState.combatLog.push(`${config.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+    if (isBuffOnly) {
+        // Buff-only move: wiggle -> circular particle -> wiggle + effect text
+        await wiggleElement('#player-portrait');
+        await createCircularParticle('#player-portrait', 'buff');
+        await wiggleElement('#player-portrait');
+
+        // Apply buff effects
+        let effectTexts = [];
+        if (move.effect.stat && move.effect.value) {
+            combatState.playerStats[move.effect.stat] += move.effect.value;
+            effectTexts.push(`+${move.effect.value} ${move.effect.stat.toUpperCase()}`);
+        }
+        if (move.effect.selfAtk) {
+            combatState.playerStats.attack += move.effect.selfAtk;
+            effectTexts.push(`+${move.effect.selfAtk} ATK`);
+        }
+        if (move.effect.blockNext) {
+            combatState.playerStats.blocking = true;
+            effectTexts.push('BLOCKING');
+        }
+
+        await showEffectText('#player-portrait', effectTexts.join(' '), 'buff');
+        combatState.combatLog.push(`${config.name} used ${move.name}!`);
+    } else {
+        // Attack move: player wiggle -> projectile -> monster wiggle + damage
+        await wiggleElement('#player-portrait');
+
+        // Determine particle type
+        const particleType = hasDebuff ? 'debuff' : 'damage';
+        await createParticle(particleType, 'projectile-to-monster', 600);
+
+        await wiggleElement('#monster-portrait');
+
+        // Calculate and apply damage
+        if (hasDamage) {
+            const defense = combatState.monsterStats.defense;
+            const defenseReduction = move.damage * (defense / 100);
+            const actualDamage = Math.max(1, Math.floor(combatState.playerStats.attack + move.damage - defenseReduction));
+
+            combatState.monsterHp = Math.max(0, combatState.monsterHp - actualDamage);
+
+            // Show damage
+            await showEffectText('#monster-portrait', `-${actualDamage} HP`, 'damage');
+            combatState.combatLog.push(`${config.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+        }
+
+        // Apply debuff effects
+        if (hasDebuff) {
+            if (move.effect.enemyDef) {
+                combatState.monsterStats.defense = Math.max(0, combatState.monsterStats.defense + move.effect.enemyDef);
+                await showEffectText('#monster-portrait', `${move.effect.enemyDef} DEF`, 'debuff');
+            }
+        }
+
+        // Apply self-buff from attack (like Roar which does damage and buffs)
+        if (move.effect && move.effect.selfAtk) {
+            combatState.playerStats.attack += move.effect.selfAtk;
+            await showEffectText('#player-portrait', `+${move.effect.selfAtk} ATK`, 'buff');
+        }
     }
+
+    // Re-render to update stats
+    renderCombatScreen();
 
     // Check if monster is defeated
     if (combatState.monsterHp <= 0) {
+        combatState.isAnimating = false;
         endCombat(true);
         return;
     }
 
+    combatState.isAnimating = false;
     advanceTurn();
 }
 
-function executeMonsterTurn() {
+async function executeMonsterTurn() {
+    if (combatState.isAnimating) return;
+
+    combatState.isAnimating = true;
+
     const monster = gameState.currentMonster;
     const config = GAME_CONFIG.characters.find(c => c.id === gameState.currentCharacter.id);
 
     // Monster picks a random move
     const move = monster.moves[Math.floor(Math.random() * monster.moves.length)];
 
-    // Calculate damage: ATK - (DEF% of damage)
-    const defense = combatState.playerStats.defense;
-    const defenseReduction = move.damage * (defense / 100);
-    const actualDamage = Math.max(1, Math.floor(combatState.monsterStats.attack + move.damage - defenseReduction));
+    // Monster attack animation: monster wiggle -> projectile -> player wiggle + damage
+    await wiggleElement('#monster-portrait');
+    await createParticle('damage', 'projectile-to-player', 600);
+    await wiggleElement('#player-portrait');
 
-    combatState.playerHp = Math.max(0, combatState.playerHp - actualDamage);
-    combatState.combatLog.push(`${monster.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+    // Calculate damage: ATK - (DEF% of damage)
+    // Check if player is blocking
+    let actualDamage = 0;
+    if (combatState.playerStats.blocking) {
+        combatState.playerStats.blocking = false;
+        await showEffectText('#player-portrait', 'BLOCKED!', 'buff');
+        combatState.combatLog.push(`${monster.name} used ${move.name}! Attack blocked!`);
+    } else {
+        const defense = combatState.playerStats.defense;
+        const defenseReduction = move.damage * (defense / 100);
+        actualDamage = Math.max(1, Math.floor(combatState.monsterStats.attack + move.damage - defenseReduction));
+
+        combatState.playerHp = Math.max(0, combatState.playerHp - actualDamage);
+        await showEffectText('#player-portrait', `-${actualDamage} HP`, 'damage');
+        combatState.combatLog.push(`${monster.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+    }
+
+    // Re-render to update HP
+    renderCombatScreen();
 
     // Check if player is defeated
     if (combatState.playerHp <= 0) {
+        combatState.isAnimating = false;
         endCombat(false);
         return;
     }
 
+    combatState.isAnimating = false;
     advanceTurn();
 }
 

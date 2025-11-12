@@ -557,6 +557,147 @@ body {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+}
+
+/* Combat Animation Effects */
+@keyframes wiggle {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-8px) rotate(-3deg); }
+    50% { transform: translateX(8px) rotate(3deg); }
+    75% { transform: translateX(-8px) rotate(-3deg); }
+}
+
+.wiggle-animation {
+    animation: wiggle 0.4s ease-in-out;
+}
+
+/* Particle projectile animation */
+.combat-particle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 0 10px currentColor;
+}
+
+.combat-particle.damage {
+    background: #EF4444;
+    color: #EF4444;
+}
+
+.combat-particle.buff {
+    background: #10B981;
+    color: #10B981;
+}
+
+.combat-particle.debuff {
+    background: #A855F7;
+    color: #A855F7;
+}
+
+/* Projectile animation - from player to monster */
+@keyframes projectile-to-monster {
+    0% {
+        left: 25%;
+        top: 30%;
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        left: 75%;
+        top: 30%;
+        opacity: 0.8;
+        transform: scale(1.2);
+    }
+}
+
+/* Projectile animation - from monster to player */
+@keyframes projectile-to-player {
+    0% {
+        left: 75%;
+        top: 30%;
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        left: 25%;
+        top: 30%;
+        opacity: 0.8;
+        transform: scale(1.2);
+    }
+}
+
+/* Circular buff particle animation */
+@keyframes circular-buff {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) translateX(60px) rotate(0deg) scale(0);
+        opacity: 0;
+    }
+    25% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(90deg) translateX(60px) rotate(-90deg) scale(1);
+    }
+    75% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(270deg) translateX(60px) rotate(-270deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(360deg) translateX(60px) rotate(-360deg) scale(0);
+    }
+}
+
+/* Effect text popup */
+.effect-text {
+    position: absolute;
+    font-size: 32px;
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 1001;
+    text-shadow: 3px 3px 0 #000;
+    animation: effect-popup 1s ease-out forwards;
+}
+
+.effect-text.damage {
+    color: #EF4444;
+}
+
+.effect-text.heal {
+    color: #10B981;
+}
+
+.effect-text.buff {
+    color: #3B82F6;
+}
+
+.effect-text.debuff {
+    color: #A855F7;
+}
+
+.effect-text.miss {
+    color: #94A3B8;
+}
+
+@keyframes effect-popup {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+    20% {
+        transform: translateY(-20px) scale(1.2);
+        opacity: 1;
+    }
+    80% {
+        transform: translateY(-60px) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) scale(0.8);
+        opacity: 0;
+    }
 }
 
 /* Results Screen */
