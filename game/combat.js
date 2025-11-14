@@ -526,20 +526,27 @@ async function useMove(moveIndex) {
 
         // Calculate and apply damage
         if (hasDamage) {
-            const attack = combatState.playerStats.attack;
-            const defense = combatState.monsterStats.defense;
-            const defenseMultiplier = 1 - (defense / 100);
-            const actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
+            // Check if monster is blocking
+            if (combatState.monsterStats.blocking) {
+                combatState.monsterStats.blocking = false;
+                await showEffectText('#monster-portrait', 'BLOCKED!', 'buff');
+                combatState.combatLog.push(`${config.name} used ${move.name}! Attack blocked!`);
+            } else {
+                const attack = combatState.playerStats.attack;
+                const defense = combatState.monsterStats.defense;
+                const defenseMultiplier = 1 - (defense / 100);
+                const actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
 
-            combatState.monsterHp = Math.max(0, combatState.monsterHp - actualDamage);
+                combatState.monsterHp = Math.max(0, combatState.monsterHp - actualDamage);
 
-            // Show damage with breakdown
-            const resistedDamage = attack - actualDamage;
-            const damageText = resistedDamage > 0
-                ? `-${actualDamage} HP (${resistedDamage} resisted)`
-                : `-${actualDamage} HP`;
-            await showEffectText('#monster-portrait', damageText, 'damage');
-            combatState.combatLog.push(`${config.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+                // Show damage with breakdown
+                const resistedDamage = attack - actualDamage;
+                const damageText = resistedDamage > 0
+                    ? `-${actualDamage} HP (${resistedDamage} resisted)`
+                    : `-${actualDamage} HP`;
+                await showEffectText('#monster-portrait', damageText, 'damage');
+                combatState.combatLog.push(`${config.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+            }
         }
 
         // Apply debuff effects
@@ -586,33 +593,57 @@ async function executeMonsterTurn() {
     // Show which attack the enemy selected
     await highlightEnemyAttack(moveIndex);
 
-    // Monster attack animation: monster wiggle -> projectile -> player wiggle + damage
-    await wiggleElement('#monster-portrait');
-    await createParticle('damage', 'projectile-to-player', 600, move.icon);
-    await wiggleElement('#player-portrait');
+    // Determine move type
+    const isBuffOnly = move.damage === 0 && move.effect && (move.effect.stat || move.effect.selfAtk || move.effect.blockNext);
 
-    // Calculate damage: ATK * (1 - DEF%)
-    // Check if player is blocking
-    let actualDamage = 0;
-    if (combatState.playerStats.blocking) {
-        combatState.playerStats.blocking = false;
-        await showEffectText('#player-portrait', 'BLOCKED!', 'buff');
-        combatState.combatLog.push(`${monster.name} used ${move.name}! Attack blocked!`);
+    if (isBuffOnly) {
+        // Buff-only move: monster buffs itself
+        await wiggleElement('#monster-portrait');
+        await createCircularParticle('#monster-portrait', 'buff');
+        await wiggleElement('#monster-portrait');
+
+        // Apply buff effects
+        let effectTexts = [];
+        if (move.effect.blockNext) {
+            combatState.monsterStats.blocking = true;
+            effectTexts.push('BLOCKING');
+        }
+        if (move.effect.selfAtk) {
+            combatState.monsterStats.attack += move.effect.selfAtk;
+            effectTexts.push(`+${move.effect.selfAtk} ATK`);
+        }
+
+        await showEffectText('#monster-portrait', effectTexts.join(' '), 'buff');
+        combatState.combatLog.push(`${monster.name} used ${move.name}!`);
     } else {
-        const attack = combatState.monsterStats.attack;
-        const defense = combatState.playerStats.defense;
-        const defenseMultiplier = 1 - (defense / 100);
-        actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
+        // Monster attack animation: monster wiggle -> projectile -> player wiggle + damage
+        await wiggleElement('#monster-portrait');
+        await createParticle('damage', 'projectile-to-player', 600, move.icon);
+        await wiggleElement('#player-portrait');
 
-        combatState.playerHp = Math.max(0, combatState.playerHp - actualDamage);
+        // Calculate damage: ATK * (1 - DEF%)
+        // Check if player is blocking
+        let actualDamage = 0;
+        if (combatState.playerStats.blocking) {
+            combatState.playerStats.blocking = false;
+            await showEffectText('#player-portrait', 'BLOCKED!', 'buff');
+            combatState.combatLog.push(`${monster.name} used ${move.name}! Attack blocked!`);
+        } else {
+            const attack = combatState.monsterStats.attack;
+            const defense = combatState.playerStats.defense;
+            const defenseMultiplier = 1 - (defense / 100);
+            actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
 
-        // Show damage with breakdown
-        const resistedDamage = attack - actualDamage;
-        const damageText = resistedDamage > 0
-            ? `-${actualDamage} HP (${resistedDamage} resisted)`
-            : `-${actualDamage} HP`;
-        await showEffectText('#player-portrait', damageText, 'damage');
-        combatState.combatLog.push(`${monster.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+            combatState.playerHp = Math.max(0, combatState.playerHp - actualDamage);
+
+            // Show damage with breakdown
+            const resistedDamage = attack - actualDamage;
+            const damageText = resistedDamage > 0
+                ? `-${actualDamage} HP (${resistedDamage} resisted)`
+                : `-${actualDamage} HP`;
+            await showEffectText('#player-portrait', damageText, 'damage');
+            combatState.combatLog.push(`${monster.name} used ${move.name}! Dealt ${actualDamage} damage.`);
+        }
     }
 
     // Re-render to update HP

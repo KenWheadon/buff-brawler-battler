@@ -172,6 +172,7 @@ const GAME_CONFIG = {
             type: "defense",
             accuracy: 80,
             description: "Block next attack",
+            effect: { blockNext: true },
             icon: "images/move-guard.png",
           },
           {
