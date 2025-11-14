@@ -2,16 +2,7 @@
 
 class LoadingScreen {
   constructor() {
-    this.elements = {
-      screen: document.getElementById("loading-screen"),
-      progressBar: document.getElementById("loading-progress-bar"),
-      progressFill: document.getElementById("loading-progress-fill"),
-      progressText: document.getElementById("loading-progress-text"),
-      startButton: document.getElementById("loading-start-btn"),
-      producerText: document.getElementById("producer-text"),
-      logoContainer: document.getElementById("loading-logo-container"),
-    };
-
+    this.elements = {};
     this.minimumLoadTime = 3000; // 3 seconds minimum
     this.startTime = null;
     this.isComplete = false;
@@ -143,7 +134,45 @@ class LoadingScreen {
       // Trophy
       "audio/trophy-award.mp3",
     ];
+  }
 
+  // Create and inject the loading screen HTML
+  createLoadingScreen() {
+    // Check if already created
+    if (this.elements.screen) {
+      return;
+    }
+
+    // Create the loading screen HTML
+    const loadingHTML = `
+      <div id="loading-screen">
+        <div id="loading-content">
+          <div id="loading-logo-container"></div>
+          <div id="loading-progress-bar">
+            <div id="loading-progress-fill"></div>
+          </div>
+          <div id="loading-progress-text">0%</div>
+          <div id="producer-text">Produced by Weird Demon Games</div>
+          <button id="loading-start-btn" class="loading-start-btn">START GAME</button>
+        </div>
+      </div>
+    `;
+
+    // Insert at the beginning of body
+    document.body.insertAdjacentHTML("afterbegin", loadingHTML);
+
+    // Store references to elements
+    this.elements = {
+      screen: document.getElementById("loading-screen"),
+      progressBar: document.getElementById("loading-progress-bar"),
+      progressFill: document.getElementById("loading-progress-fill"),
+      progressText: document.getElementById("loading-progress-text"),
+      startButton: document.getElementById("loading-start-btn"),
+      producerText: document.getElementById("producer-text"),
+      logoContainer: document.getElementById("loading-logo-container"),
+    };
+
+    // Initialize logo animation after elements are created
     this.initLogoAnimation();
   }
 
@@ -162,12 +191,10 @@ class LoadingScreen {
     // Create the animated logo sprite (but don't start it yet)
     this.logoSprite = new SpriteSheet({
       imagePath: "images/company-logo-spritesheet-1386-1818.png",
-      frameWidth: 21, // offset from left
-      frameHeight: 30, // offset from top
-      frameContentWidth: 210, // actual content width
-      frameContentHeight: 273, // actual content height
-      gapX: 0,
-      gapY: 0,
+      frameWidth: 21, // offset from left of the cell
+      frameHeight: 30, // offset from top of the cell
+      frameContentWidth: 210, // THIS is the width of your logo content
+      frameContentHeight: 273, // THIS is the height of your logo content
       rows: 6,
       cols: 6,
       fps: 12,
@@ -227,6 +254,9 @@ class LoadingScreen {
   }
 
   show() {
+    // Create the loading screen if it doesn't exist
+    this.createLoadingScreen();
+
     this.elements.screen.style.display = "flex";
     this.elements.progressBar.style.display = "block";
     this.elements.progressText.style.display = "block";

@@ -44,6 +44,51 @@ const STORY_PANELS = [
 
 class StoryPanel {
   constructor() {
+    this.elements = {};
+    this.currentPanelIndex = 0;
+    this.onCompleteCallback = null;
+  }
+
+  // Create and inject the story panel HTML
+  createStoryPanel() {
+    // Check if already created
+    if (this.elements.overlay) {
+      return;
+    }
+
+    // Create the story panel HTML
+    const storyHTML = `
+      <!-- Story Panel Overlay -->
+      <div id="overlay" style="display: none;"></div>
+      <div id="story-panel" style="display: none;">
+        <div id="story-panel-content">
+          <div id="story-panel-image">
+            <img id="story-img" src="images/story1.jpg" alt="Story Panel" />
+          </div>
+          <div id="story-panel-text">
+            <p id="story-text">Story text will appear here...</p>
+          </div>
+          <div id="story-panel-pagination">
+            <span id="story-page-indicator">1 / 8</span>
+          </div>
+          <div id="story-panel-controls">
+            <button id="story-back-btn" class="story-nav-btn">← Back</button>
+            <button id="story-skip-btn" class="story-action-btn">Skip</button>
+            <button id="story-next-btn" class="story-nav-btn">Next →</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Insert after loading screen (or at the beginning of body)
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+      loadingScreen.insertAdjacentHTML('afterend', storyHTML);
+    } else {
+      document.body.insertAdjacentHTML('afterbegin', storyHTML);
+    }
+
+    // Store references to elements
     this.elements = {
       overlay: document.getElementById("overlay"),
       panel: document.getElementById("story-panel"),
@@ -55,9 +100,7 @@ class StoryPanel {
       skipBtn: document.getElementById("story-skip-btn"),
     };
 
-    this.currentPanelIndex = 0;
-    this.onCompleteCallback = null;
-
+    // Setup event listeners after elements are created
     this.setupEventListeners();
   }
 
@@ -134,6 +177,9 @@ class StoryPanel {
   }
 
   open(callback) {
+    // Create the story panel if it doesn't exist
+    this.createStoryPanel();
+
     this.currentPanelIndex = 0;
     this.onCompleteCallback = callback;
 

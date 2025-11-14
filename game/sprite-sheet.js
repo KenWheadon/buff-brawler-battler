@@ -222,7 +222,8 @@ class SpriteSheet {
           }
         }
 
-        if (this.currentElement && this.isPlaying) this.applyToElement(this.currentElement);
+        if (this.currentElement && this.isPlaying)
+          this.applyToElement(this.currentElement);
       }, this.frameDelay);
     }
   }
@@ -332,8 +333,12 @@ class SpriteSheet {
     // and transforming an actual <img> element inside it.
 
     // 1. Set the size of the <img> tag to the full sprite sheet dimensions.
-    const fullWidth = this.cols * (this.frameWidth + this.frameContentWidth + this.gapX);
-    const fullHeight = this.rows * (this.frameHeight + this.frameContentHeight + this.gapY);
+    // The total width/height of one cell in the grid
+    const cellWidth = this.frameWidth + this.frameContentWidth + this.gapX;
+    const cellHeight = this.frameHeight + this.frameContentHeight + this.gapY;
+
+    const fullWidth = this.cols * cellWidth;
+    const fullHeight = this.rows * cellHeight;
 
     imgElement.style.width = `${fullWidth}px`;
     imgElement.style.height = `${fullHeight}px`;
@@ -346,16 +351,14 @@ class SpriteSheet {
         gapX: this.gapX,
         frameHeight: this.frameHeight,
         frameContentHeight: this.frameContentHeight,
-        gapY: this.gapY
+        gapY: this.gapY,
       });
     }
 
     // 2. Calculate the negative offset to show the correct frame.
     // This should be the top-left of the content area for the current frame.
-    const cellWidth = this.frameWidth + this.frameContentWidth + this.gapX;
-    const cellHeight = this.frameHeight + this.frameContentHeight + this.gapY;
-    const imgX = -(col * cellWidth + this.frameWidth); // Negative offset to the content area
-    const imgY = -(row * cellHeight + this.frameHeight); // Negative offset to the content area
+    const imgX = -(col * cellWidth); // Negative offset to the top-left of the cell
+    const imgY = -(row * cellHeight); // Negative offset to the top-left of the cell
 
     if (isLosingSprite) {
       console.log("Transform offset:", imgX, imgY, "for col/row:", col, row);
