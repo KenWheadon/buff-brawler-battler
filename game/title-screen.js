@@ -44,11 +44,15 @@ function loadTitleScreen() {
 }
 
 function startRun() {
-  // Reset wave counter and start wave 1
+  // Reset to level 1, wave 1
+  gameState.currentLevel = 1;
   gameState.currentWave = 1;
 
-  // Get first wave enemy
-  const enemy = GAME_CONFIG.waveEnemies[0];
+  // Get first level config
+  const levelConfig = GAME_CONFIG.levels[0];
+
+  // Get first wave enemy of level 1
+  const enemy = levelConfig.waveEnemies[0];
 
   gameState.currentMonster = {
     ...enemy,

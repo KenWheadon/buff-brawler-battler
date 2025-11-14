@@ -60,11 +60,22 @@ function wiggleElement(selector) {
     });
 }
 
-function createParticle(type, animationName, duration = 600) {
+function createParticle(type, animationName, duration = 600, iconSrc = null) {
     return new Promise(resolve => {
         const particle = document.createElement('div');
         particle.className = `combat-particle ${type}`;
         particle.style.animation = `${animationName} ${duration}ms ease-in-out forwards`;
+
+        // Add icon if provided
+        if (iconSrc) {
+            const icon = document.createElement('img');
+            icon.src = iconSrc;
+            icon.style.width = '100%';
+            icon.style.height = '100%';
+            icon.style.objectFit = 'contain';
+            particle.appendChild(icon);
+        }
+
         document.querySelector('.combat-screen').appendChild(particle);
 
         setTimeout(() => {
@@ -353,9 +364,20 @@ function renderFullCombatScreen(container, data) {
 
     const playerPortrait = config.images[character.level];
 
+    // Get current level config for background
+    const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel) || GAME_CONFIG.levels[0];
+    const backgroundStyle = levelConfig.background
+        ? `background-image: url('${levelConfig.background}'); background-size: cover; background-position: center;`
+        : `background-color: ${levelConfig.backgroundColor || '#2d5016'};`;
+
+    // Determine wave text
+    const waveText = monster.isBoss
+        ? `${levelConfig.name} - Boss`
+        : `${levelConfig.name} - Wave ${gameState.currentWave || 1}`;
+
     container.innerHTML = `
-        <div class="combat-screen fade-in">
-            <h2>Combat - Wave ${gameState.currentWave || 1}</h2>
+        <div class="combat-screen fade-in" style="${backgroundStyle}">
+            <h2>${waveText}</h2>
 
             <div class="turn-order">
                 <strong>Turn Order:</strong>
@@ -498,7 +520,7 @@ async function useMove(moveIndex) {
 
         // Determine particle type
         const particleType = hasDebuff ? 'debuff' : 'damage';
-        await createParticle(particleType, 'projectile-to-monster', 600);
+        await createParticle(particleType, 'projectile-to-monster', 600, move.icon);
 
         await wiggleElement('#monster-portrait');
 
@@ -566,7 +588,7 @@ async function executeMonsterTurn() {
 
     // Monster attack animation: monster wiggle -> projectile -> player wiggle + damage
     await wiggleElement('#monster-portrait');
-    await createParticle('damage', 'projectile-to-player', 600);
+    await createParticle('damage', 'projectile-to-player', 600, move.icon);
     await wiggleElement('#player-portrait');
 
     // Calculate damage: ATK * (1 - DEF%)

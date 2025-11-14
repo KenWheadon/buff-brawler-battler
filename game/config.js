@@ -104,81 +104,104 @@ const GAME_CONFIG = {
     },
   ],
 
-  // Wave enemies (3 waves before boss)
-  waveEnemies: [
+  // Levels configuration - each level has its own background, waves, and boss
+  levels: [
     {
       id: 1,
-      name: "Weak Grunt",
-      hp: 30,
-      attack: 5,
-      defense: 5,
-      speed: 10,
-      image: "images/enemy-wave1.png",
-      icon: "images/enemy-wave1-icon.png",
-      moves: [{ name: "Scratch", damage: 5, type: "physical", description: "A basic attack" }],
+      name: "Forest",
+      background: "images/forest-background.png",
+      backgroundColor: "#2d5016", // Fallback color if image doesn't load
+      waveEnemies: [
+        {
+          id: 1,
+          name: "Weak Grunt",
+          hp: 30,
+          attack: 5,
+          defense: 5,
+          speed: 10,
+          image: "images/enemy-wave1.png",
+          icon: "images/enemy-wave1-icon.png",
+          moves: [{ name: "Scratch", damage: 5, type: "physical", description: "A basic attack", icon: "images/icon-attack.png" }],
+        },
+        {
+          id: 2,
+          name: "Tough Brute",
+          hp: 40,
+          attack: 8,
+          defense: 8,
+          speed: 8,
+          image: "images/enemy-wave2.png",
+          icon: "images/enemy-wave2-icon.png",
+          moves: [{ name: "Punch", damage: 8, type: "physical", description: "A solid punch", icon: "images/icon-attack.png" }],
+        },
+        {
+          id: 3,
+          name: "Elite Warrior",
+          hp: 45,
+          attack: 10,
+          defense: 10,
+          speed: 12,
+          image: "images/enemy-wave3.png",
+          icon: "images/enemy-wave3-icon.png",
+          moves: [{ name: "Heavy Blow", damage: 12, type: "physical", description: "A powerful strike", icon: "images/icon-attack.png" }],
+        },
+      ],
+      boss: {
+        id: 10,
+        name: "Bear Boss",
+        baseHp: 40,
+        baseAttack: 30,
+        baseDefense: 10,
+        baseSpeed: 10,
+        statsMultiplier: 1.5,
+        image: "images/bear-level1.png",
+        icon: "images/bear-level1-icon.png",
+        unlocksCharacterId: 2, // Unlocks Bear character
+        moves: [
+          {
+            name: "Slam",
+            damage: 30,
+            type: "physical",
+            accuracy: 100,
+            description: "A powerful attack",
+            icon: "images/move-slam.png",
+          },
+          {
+            name: "Guard",
+            damage: 0,
+            type: "defense",
+            accuracy: 80,
+            description: "Block next attack",
+            icon: "images/move-guard.png",
+          },
+          {
+            name: "Crush",
+            damage: 30,
+            type: "physical",
+            accuracy: 75,
+            description: "Attack and reduce defense",
+            icon: "images/icon-crush.png",
+          },
+        ],
+      },
     },
-    {
-      id: 2,
-      name: "Tough Brute",
-      hp: 40,
-      attack: 8,
-      defense: 8,
-      speed: 8,
-      image: "images/enemy-wave2.png",
-      icon: "images/enemy-wave2-icon.png",
-      moves: [{ name: "Punch", damage: 8, type: "physical", description: "A solid punch" }],
-    },
-    {
-      id: 3,
-      name: "Elite Warrior",
-      hp: 45,
-      attack: 10,
-      defense: 10,
-      speed: 12,
-      image: "images/enemy-wave3.png",
-      icon: "images/enemy-wave3-icon.png",
-      moves: [{ name: "Heavy Blow", damage: 12, type: "physical", description: "A powerful strike" }],
-    },
+    // Add more levels here - Example Level 2:
+    // {
+    //   id: 2,
+    //   name: "Mountain",
+    //   background: "images/mountain-background.png",
+    //   backgroundColor: "#4a5568",
+    //   waveEnemies: [
+    //     { /* wave 1 enemy */ },
+    //     { /* wave 2 enemy */ },
+    //     { /* wave 3 enemy */ },
+    //   ],
+    //   boss: {
+    //     /* boss definition */
+    //     unlocksCharacterId: 3, // Unlocks next character
+    //   },
+    // },
   ],
-
-  // Boss definition (Bear with 1.5x stats and all moves unlocked)
-  boss: {
-    id: 10,
-    name: "Bear Boss",
-    baseHp: 40,
-    baseAttack: 30,
-    baseDefense: 10,
-    baseSpeed: 10,
-    statsMultiplier: 1.5,
-    image: "images/bear-level1.png",
-    icon: "images/bear-level1-icon.png",
-    moves: [
-      {
-        name: "Slam",
-        damage: 30,
-        type: "physical",
-        accuracy: 100,
-        description: "A powerful attack",
-        icon: "images/move-slam.png",
-      },
-      {
-        name: "Guard",
-        damage: 0,
-        type: "defense",
-        accuracy: 80,
-        description: "Block next attack",
-        icon: "images/move-guard.png",
-      },
-      {
-        name: "Crush",
-        damage: 30,
-        type: "physical",
-        accuracy: 75,
-        description: "Attack and reduce defense",
-        icon: "images/icon-crush.png",
-      },
-    ],
-  },
 
   // Level bonuses
   levelBonuses: {
@@ -220,6 +243,7 @@ function saveGameState(gameState) {
   try {
     const saveData = {
       flipPoints: gameState.flipPoints,
+      currentLevel: gameState.currentLevel,
       currentWave: gameState.currentWave,
       characters: gameState.characters.map((char) => ({
         id: char.id,
@@ -258,7 +282,8 @@ function createInitialGameState() {
     currentCharacter: null,
     selectedCharacter: null,
     currentMonster: null,
-    currentWave: 0,
+    currentLevel: 1, // Current level (1, 2, 3, etc.)
+    currentWave: 0, // Current wave within the level (1, 2, 3, or 0 for boss)
     flipPoints: GAME_CONFIG.initialFlipTokens,
     characters: GAME_CONFIG.characters.map((char) => ({
       id: char.id,
@@ -278,6 +303,7 @@ function initializeGameState() {
     // Load from save
     const gameState = createInitialGameState();
     gameState.flipPoints = savedState.flipPoints;
+    gameState.currentLevel = savedState.currentLevel || 1; // Default to level 1 if not saved
     gameState.currentWave = 0; // Reset run progress on load
 
     // Restore character states

@@ -533,6 +533,8 @@ body {
 
 /* Combat Screen */
 .combat-screen {
+  /* Background is set dynamically via inline styles based on current level */
+  /* Fallback background if no level background is set */
   background-image: url("images/area1-bg.jpg");
   background-size: cover;
   background-position: center;

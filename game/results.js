@@ -59,10 +59,17 @@ function updateResultsScreenElements(resultsScreen, playerWon) {
         let actionsHTML;
         if (playerWon) {
             if (monster.isBoss) {
-                const bearChar = gameState.characters.find(c => c.id === 2);
-                const canCapture = !bearChar.unlocked;
+                const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel);
+                const unlockCharId = levelConfig?.boss?.unlocksCharacterId;
+                const unlockChar = unlockCharId ? gameState.characters.find(c => c.id === unlockCharId) : null;
+                const canCapture = unlockChar && !unlockChar.unlocked;
+
+                // Check if there's a next level
+                const hasNextLevel = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel + 1);
+
                 actionsHTML = `
-                    ${canCapture ? '<button class="btn btn-success" onclick="captureMonster()">Capture Bear</button>' : ''}
+                    ${canCapture ? '<button class="btn btn-success" onclick="captureMonster()">Capture ' + (levelConfig?.boss?.name || 'Boss') + '</button>' : ''}
+                    ${hasNextLevel ? '<button class="btn btn-primary" onclick="continueToNextLevel()">Next Level</button>' : ''}
                     <button class="btn btn-secondary" onclick="returnToMenu()">End Run</button>
                 `;
             } else {
@@ -95,12 +102,18 @@ function renderFullResultsScreen(container, playerWon) {
     let actionsHTML;
     if (playerWon) {
         if (monster.isBoss) {
-            // Boss fight - option to capture or continue
-            const bearChar = gameState.characters.find(c => c.id === 2);
-            const canCapture = !bearChar.unlocked;
+            // Boss fight - option to capture or continue to next level
+            const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel);
+            const unlockCharId = levelConfig?.boss?.unlocksCharacterId;
+            const unlockChar = unlockCharId ? gameState.characters.find(c => c.id === unlockCharId) : null;
+            const canCapture = unlockChar && !unlockChar.unlocked;
+
+            // Check if there's a next level
+            const hasNextLevel = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel + 1);
 
             actionsHTML = `
-                ${canCapture ? '<button class="btn btn-success" onclick="captureMonster()">Capture Bear</button>' : ''}
+                ${canCapture ? '<button class="btn btn-success" onclick="captureMonster()">Capture ' + (levelConfig?.boss?.name || 'Boss') + '</button>' : ''}
+                ${hasNextLevel ? '<button class="btn btn-primary" onclick="continueToNextLevel()">Next Level</button>' : ''}
                 <button class="btn btn-secondary" onclick="returnToMenu()">End Run</button>
             `;
         } else {
@@ -144,14 +157,24 @@ function renderFullResultsScreen(container, playerWon) {
 }
 
 function captureMonster() {
-    // Unlock Bear character
-    const bearChar = gameState.characters.find(c => c.id === 2);
+    // Get the current level's boss to find which character to unlock
+    const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel);
+    if (!levelConfig || !levelConfig.boss.unlocksCharacterId) {
+        // No character to unlock, just return to menu
+        returnToMenu();
+        return;
+    }
 
-    if (bearChar && !bearChar.unlocked) {
-        bearChar.unlocked = true;
+    const unlockedCharId = levelConfig.boss.unlocksCharacterId;
+    const unlockedChar = gameState.characters.find(c => c.id === unlockedCharId);
+
+    if (unlockedChar && !unlockedChar.unlocked) {
+        unlockedChar.unlocked = true;
+
+        const charConfig = GAME_CONFIG.characters.find(c => c.id === unlockedCharId);
 
         // Check for trophy unlocks
-        checkCharacterUnlockTrophies(bearChar.id);
+        checkCharacterUnlockTrophies(unlockedChar.id);
 
         // Save game state
         saveGameState(gameState);
@@ -159,7 +182,7 @@ function captureMonster() {
         // Show celebration notification
         showSuccess(
             'Character Unlocked!',
-            'You captured the Bear Boss and unlocked <strong>Bear</strong> as a playable character!<br><br>Check the character gallery to train and play as Bear!',
+            `You captured the ${levelConfig.boss.name} and unlocked <strong>${charConfig.name}</strong> as a playable character!<br><br>Check the character gallery to train and play as ${charConfig.name}!`,
             0  // Don't auto-close, require button click
         );
 
@@ -191,9 +214,12 @@ function continueToNextWave() {
 }
 
 function startWave(waveNumber) {
+    // Get current level config
+    const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel) || GAME_CONFIG.levels[0];
+
     // Get the wave enemy (1, 2, or 3)
     const waveIndex = Math.min(waveNumber - 1, 2);
-    const enemy = GAME_CONFIG.waveEnemies[waveIndex];
+    const enemy = levelConfig.waveEnemies[waveIndex];
 
     gameState.currentMonster = {
         ...enemy,
@@ -204,7 +230,9 @@ function startWave(waveNumber) {
 }
 
 function startBossFight() {
-    const boss = GAME_CONFIG.boss;
+    // Get current level config
+    const levelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel) || GAME_CONFIG.levels[0];
+    const boss = levelConfig.boss;
 
     // Apply boss multiplier to stats
     gameState.currentMonster = {
@@ -223,9 +251,36 @@ function startBossFight() {
     loadCombatScreen();
 }
 
+function continueToNextLevel() {
+    // Increment to next level
+    gameState.currentLevel++;
+
+    // Check if the next level exists
+    const nextLevelConfig = GAME_CONFIG.levels.find(l => l.id === gameState.currentLevel);
+    if (!nextLevelConfig) {
+        // No more levels - return to menu
+        returnToMenu();
+        return;
+    }
+
+    // Reset wave counter and start wave 1 of the new level
+    gameState.currentWave = 1;
+
+    // Get first wave enemy of the new level
+    const enemy = nextLevelConfig.waveEnemies[0];
+
+    gameState.currentMonster = {
+        ...enemy,
+        isBoss: false
+    };
+
+    loadCombatScreen();
+}
+
 function returnToMenu() {
-    // Reset wave counter
+    // Reset wave counter and level
     gameState.currentWave = 0;
+    gameState.currentLevel = 1;
 
     // Save game state
     saveGameState(gameState);
