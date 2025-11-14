@@ -53,6 +53,7 @@
     <!-- Load scripts -->
     <script src="config.js"></script>
     <script src="notifications.js"></script>
+    <script src="trophy-manager.js"></script>
     <script src="story-panel.js"></script>
     <script src="title-screen.js"></script>
     <script src="character-gallery.js"></script>
@@ -92,6 +93,9 @@
       function initializeGame() {
         // Load or create game state
         gameState = initializeGameState();
+
+        // Initialize trophy system
+        initTrophyManager();
 
         // Load title screen
         loadTitleScreen();

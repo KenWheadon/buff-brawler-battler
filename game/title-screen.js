@@ -33,6 +33,8 @@ function loadTitleScreen() {
             <div class="button-group">
                 <button class="btn btn-primary" onclick="startRun()">Start Run</button>
                 <button class="btn btn-secondary" onclick="viewStory()">View Story</button>
+                <button class="btn btn-secondary" onclick="trainCurrentCharacter()">Train</button>
+                <button class="btn btn-secondary" onclick="openTrophyScreen()">🏆 Trophies</button>
             </div>
             <div style="margin-top: 20px; font-size: 12px; color: #888;">
                 Flip Tokens: ${gameState.flipPoints}
@@ -61,4 +63,10 @@ function viewStory() {
   if (storyPanel) {
     storyPanel.replay();
   }
+}
+
+function trainCurrentCharacter() {
+  // Set the current character as the selected character for training
+  gameState.selectedCharacter = gameState.currentCharacter;
+  loadTrainingScreen();
 }

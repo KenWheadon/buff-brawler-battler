@@ -141,7 +141,8 @@ function updateTrainingScreenElements(trainingScreen, character, config, bonus, 
     const trainingActions = trainingScreen.querySelector('.training-actions');
     if (trainingActions) {
         trainingActions.innerHTML = `
-            <button class="btn btn-secondary" onclick="exitTraining()">Back</button>
+            <button class="btn btn-secondary" onclick="exitToTitle()">Title</button>
+            <button class="btn btn-secondary" onclick="exitTraining()">Gallery</button>
             ${canLevelUp ? '<button class="btn btn-success" onclick="levelUpCharacter()">Level Up!</button>' : ''}
             <button class="btn btn-primary" onclick="selectCharacterAndExit()">Select</button>
         `;
@@ -246,7 +247,8 @@ function renderFullTrainingScreen(container, character, config, bonus, flippedCo
             </div>
 
             <div class="training-actions">
-                <button class="btn btn-secondary" onclick="exitTraining()">Back</button>
+                <button class="btn btn-secondary" onclick="exitToTitle()">Title</button>
+                <button class="btn btn-secondary" onclick="exitTraining()">Gallery</button>
                 ${canLevelUp ? '<button class="btn btn-success" onclick="levelUpCharacter()">Level Up!</button>' : ''}
                 <button class="btn btn-primary" onclick="selectCharacterAndExit()">Select</button>
             </div>
@@ -323,6 +325,9 @@ function levelUpCharacter() {
 
     const config = GAME_CONFIG.characters.find(c => c.id === character.id);
 
+    // Check for trophy unlocks
+    checkCharacterLevelTrophies(character.id, character.level);
+
     // Save game state first
     saveGameState(gameState);
 
@@ -339,6 +344,10 @@ function levelUpCharacter() {
 
 function exitTraining() {
     loadCharacterGallery();
+}
+
+function exitToTitle() {
+    loadTitleScreen();
 }
 
 function selectCharacterAndExit() {

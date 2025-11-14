@@ -150,6 +150,9 @@ function captureMonster() {
     if (bearChar && !bearChar.unlocked) {
         bearChar.unlocked = true;
 
+        // Check for trophy unlocks
+        checkCharacterUnlockTrophies(bearChar.id);
+
         // Save game state
         saveGameState(gameState);
 

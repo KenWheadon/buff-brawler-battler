@@ -29,6 +29,22 @@ function highlightSelectedAttack(moveIndex) {
     });
 }
 
+function highlightEnemyAttack(moveIndex) {
+    return new Promise(resolve => {
+        const enemyMoveItems = document.querySelectorAll('.enemy-move-item');
+        const selectedMove = enemyMoveItems[moveIndex];
+        if (!selectedMove) {
+            resolve();
+            return;
+        }
+        selectedMove.classList.add('selected-attack');
+        setTimeout(() => {
+            selectedMove.classList.remove('selected-attack');
+            resolve();
+        }, 500);
+    });
+}
+
 function wiggleElement(selector) {
     return new Promise(resolve => {
         const element = document.querySelector(selector);
@@ -542,7 +558,11 @@ async function executeMonsterTurn() {
     const config = GAME_CONFIG.characters.find(c => c.id === gameState.currentCharacter.id);
 
     // Monster picks a random move
-    const move = monster.moves[Math.floor(Math.random() * monster.moves.length)];
+    const moveIndex = Math.floor(Math.random() * monster.moves.length);
+    const move = monster.moves[moveIndex];
+
+    // Show which attack the enemy selected
+    await highlightEnemyAttack(moveIndex);
 
     // Monster attack animation: monster wiggle -> projectile -> player wiggle + damage
     await wiggleElement('#monster-portrait');
