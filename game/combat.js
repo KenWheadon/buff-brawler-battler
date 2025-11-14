@@ -228,9 +228,15 @@ function updateCombatScreenElements(combatScreen, data) {
     const playerStatsDiv = combatScreen.querySelector('#player-combatant > div[style*="margin-top: 10px"]');
     if (playerStatsDiv) {
         playerStatsDiv.innerHTML = `
-            <strong>ATK:</strong> ${combatState.playerStats.attack} |
-            <strong>DEF:</strong> ${combatState.playerStats.defense} |
-            <strong>SPD:</strong> ${combatState.playerStats.speed}
+            <span class="stat-tooltip" data-tooltip="Attack - Base damage dealt to enemies">
+                <strong>ATK:</strong> ${combatState.playerStats.attack}
+            </span> |
+            <span class="stat-tooltip" data-tooltip="Defense - Percent of damage resisted (${combatState.playerStats.defense}% resistance)">
+                <strong>DEF:</strong> ${combatState.playerStats.defense}
+            </span> |
+            <span class="stat-tooltip" data-tooltip="Speed - Determines turn frequency">
+                <strong>SPD:</strong> ${combatState.playerStats.speed}
+            </span>
         `;
     }
 
@@ -326,9 +332,15 @@ function renderFullCombatScreen(container, data) {
                         <div class="hp-text">${combatState.playerHp} / ${combatState.playerStats.hp}</div>
                     </div>
                     <div style="margin-top: 10px; font-size: 14px;">
-                        <strong>ATK:</strong> ${combatState.playerStats.attack} |
-                        <strong>DEF:</strong> ${combatState.playerStats.defense} |
-                        <strong>SPD:</strong> ${combatState.playerStats.speed}
+                        <span class="stat-tooltip" data-tooltip="Attack - Base damage dealt to enemies">
+                            <strong>ATK:</strong> ${combatState.playerStats.attack}
+                        </span> |
+                        <span class="stat-tooltip" data-tooltip="Defense - Percent of damage resisted (${combatState.playerStats.defense}% resistance)">
+                            <strong>DEF:</strong> ${combatState.playerStats.defense}
+                        </span> |
+                        <span class="stat-tooltip" data-tooltip="Speed - Determines turn frequency">
+                            <strong>SPD:</strong> ${combatState.playerStats.speed}
+                        </span>
                     </div>
                     <div class="moves">
                         <h4>Your Moves:</h4>
@@ -345,10 +357,30 @@ function renderFullCombatScreen(container, data) {
                         <div class="hp-fill" style="width: ${monsterHpPercent}%"></div>
                         <div class="hp-text">${combatState.monsterHp} / ${combatState.monsterStats.hp}</div>
                     </div>
-                    <div style="margin-top: 20px;">
-                        <strong>ATK:</strong> ${combatState.monsterStats.attack}<br>
-                        <strong>DEF:</strong> ${combatState.monsterStats.defense}<br>
-                        <strong>SPD:</strong> ${combatState.monsterStats.speed}
+                    <div style="margin-top: 10px; font-size: 14px;">
+                        <span class="stat-tooltip" data-tooltip="Attack - Base damage dealt to you">
+                            <strong>ATK:</strong> ${combatState.monsterStats.attack}
+                        </span><br>
+                        <span class="stat-tooltip" data-tooltip="Defense - Percent of damage resisted (${combatState.monsterStats.defense}% resistance)">
+                            <strong>DEF:</strong> ${combatState.monsterStats.defense}
+                        </span><br>
+                        <span class="stat-tooltip" data-tooltip="Speed - Determines turn frequency">
+                            <strong>SPD:</strong> ${combatState.monsterStats.speed}
+                        </span>
+                    </div>
+                    <div class="moves">
+                        <h4>Enemy Moves:</h4>
+                        <div class="enemy-move-list">
+                            ${monster.moves.map(move => `
+                                <div class="enemy-move-item">
+                                    ${move.icon ? `<img src="${move.icon}" alt="${move.name}" class="enemy-move-icon">` : ''}
+                                    <div class="enemy-move-info">
+                                        <span class="enemy-move-name">${move.name}</span>
+                                        ${move.description ? `<span class="enemy-move-desc">${move.description}</span>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -430,14 +462,19 @@ async function useMove(moveIndex) {
 
         // Calculate and apply damage
         if (hasDamage) {
+            const attack = combatState.playerStats.attack;
             const defense = combatState.monsterStats.defense;
-            const defenseReduction = move.damage * (defense / 100);
-            const actualDamage = Math.max(1, Math.floor(combatState.playerStats.attack + move.damage - defenseReduction));
+            const defenseMultiplier = 1 - (defense / 100);
+            const actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
 
             combatState.monsterHp = Math.max(0, combatState.monsterHp - actualDamage);
 
-            // Show damage
-            await showEffectText('#monster-portrait', `-${actualDamage} HP`, 'damage');
+            // Show damage with breakdown
+            const resistedDamage = attack - actualDamage;
+            const damageText = resistedDamage > 0
+                ? `-${actualDamage} HP (${resistedDamage} resisted)`
+                : `-${actualDamage} HP`;
+            await showEffectText('#monster-portrait', damageText, 'damage');
             combatState.combatLog.push(`${config.name} used ${move.name}! Dealt ${actualDamage} damage.`);
         }
 
@@ -486,7 +523,7 @@ async function executeMonsterTurn() {
     await createParticle('damage', 'projectile-to-player', 600);
     await wiggleElement('#player-portrait');
 
-    // Calculate damage: ATK - (DEF% of damage)
+    // Calculate damage: ATK * (1 - DEF%)
     // Check if player is blocking
     let actualDamage = 0;
     if (combatState.playerStats.blocking) {
@@ -494,12 +531,19 @@ async function executeMonsterTurn() {
         await showEffectText('#player-portrait', 'BLOCKED!', 'buff');
         combatState.combatLog.push(`${monster.name} used ${move.name}! Attack blocked!`);
     } else {
+        const attack = combatState.monsterStats.attack;
         const defense = combatState.playerStats.defense;
-        const defenseReduction = move.damage * (defense / 100);
-        actualDamage = Math.max(1, Math.floor(combatState.monsterStats.attack + move.damage - defenseReduction));
+        const defenseMultiplier = 1 - (defense / 100);
+        actualDamage = Math.max(1, Math.floor(attack * defenseMultiplier));
 
         combatState.playerHp = Math.max(0, combatState.playerHp - actualDamage);
-        await showEffectText('#player-portrait', `-${actualDamage} HP`, 'damage');
+
+        // Show damage with breakdown
+        const resistedDamage = attack - actualDamage;
+        const damageText = resistedDamage > 0
+            ? `-${actualDamage} HP (${resistedDamage} resisted)`
+            : `-${actualDamage} HP`;
+        await showEffectText('#player-portrait', damageText, 'damage');
         combatState.combatLog.push(`${monster.name} used ${move.name}! Dealt ${actualDamage} damage.`);
     }
 

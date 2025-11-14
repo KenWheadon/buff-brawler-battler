@@ -115,7 +115,7 @@ const GAME_CONFIG = {
       speed: 10,
       image: "images/enemy-wave1.png",
       icon: "images/enemy-wave1-icon.png",
-      moves: [{ name: "Scratch", damage: 5, type: "physical" }],
+      moves: [{ name: "Scratch", damage: 5, type: "physical", description: "A basic attack" }],
     },
     {
       id: 2,
@@ -126,7 +126,7 @@ const GAME_CONFIG = {
       speed: 8,
       image: "images/enemy-wave2.png",
       icon: "images/enemy-wave2-icon.png",
-      moves: [{ name: "Punch", damage: 8, type: "physical" }],
+      moves: [{ name: "Punch", damage: 8, type: "physical", description: "A solid punch" }],
     },
     {
       id: 3,
@@ -137,7 +137,7 @@ const GAME_CONFIG = {
       speed: 12,
       image: "images/enemy-wave3.png",
       icon: "images/enemy-wave3-icon.png",
-      moves: [{ name: "Heavy Blow", damage: 12, type: "physical" }],
+      moves: [{ name: "Heavy Blow", damage: 12, type: "physical", description: "A powerful strike" }],
     },
   ],
 

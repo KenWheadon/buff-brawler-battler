@@ -3,7 +3,7 @@ function loadTitleScreen() {
   const container = document.getElementById("game-container");
 
   const current = gameState.currentCharacter;
-  const currentConfig = GAME_CONFIG.characters.find(c => c.id === current.id);
+  const currentConfig = GAME_CONFIG.characters.find((c) => c.id === current.id);
   const currentBonus = GAME_CONFIG.levelBonuses[current.level];
   const currentPortrait = currentConfig.images[current.level];
 
@@ -12,13 +12,19 @@ function loadTitleScreen() {
             <img src="images/title-logo.png" alt="Buff Bara Battler" class="title-logo">
 
             <div class="title-current-character" onclick="loadCharacterGallery()">
-                <img src="${currentPortrait}" alt="${currentConfig.name}" class="current-character-portrait">
+                <img src="${currentPortrait}" alt="${
+    currentConfig.name
+  }" class="current-character-portrait">
                 <h3>Current Character</h3>
                 <h4>${currentConfig.name} - Level ${current.level}</h4>
                 <div class="stats">
                     HP: ${Math.floor(currentConfig.baseHp * currentBonus)} |
-                    ATK: ${Math.floor(currentConfig.baseAttack * currentBonus)} |
-                    DEF: ${Math.floor(currentConfig.baseDefense * currentBonus)} |
+                    ATK: ${Math.floor(
+                      currentConfig.baseAttack * currentBonus
+                    )} |
+                    DEF: ${Math.floor(
+                      currentConfig.baseDefense * currentBonus
+                    )} |
                     SPD: ${Math.floor(currentConfig.baseSpeed * currentBonus)}
                 </div>
                 <p style="margin-top: 10px; font-size: 12px; color: #666;">Click to view gallery</p>
@@ -26,7 +32,6 @@ function loadTitleScreen() {
 
             <div class="button-group">
                 <button class="btn btn-primary" onclick="startRun()">Start Run</button>
-                <button class="btn btn-secondary" onclick="loadCharacterGallery()">Character Gallery</button>
             </div>
             <div style="margin-top: 20px; font-size: 12px; color: #888;">
                 Flip Tokens: ${gameState.flipPoints}

@@ -928,3 +928,83 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Stat Tooltips */
+.stat-tooltip {
+  position: relative;
+  cursor: help;
+  display: inline-block;
+  border-bottom: 1px dotted #000;
+}
+
+.stat-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: normal;
+  z-index: 1000;
+  margin-bottom: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stat-tooltip:hover::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #000;
+  z-index: 1000;
+}
+
+/* Enemy Move List */
+.enemy-move-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.enemy-move-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f3f4f6;
+  border: 2px solid #000;
+  border-radius: 4px;
+}
+
+.enemy-move-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.enemy-move-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.enemy-move-name {
+  font-weight: 900;
+  font-size: 13px;
+  color: #000;
+}
+
+.enemy-move-desc {
+  font-size: 10px;
+  color: #333;
+  font-weight: normal;
+}
