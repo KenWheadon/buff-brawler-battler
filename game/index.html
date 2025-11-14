@@ -16,6 +16,21 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+      <div id="loading-content">
+        <div id="loading-logo-container"></div>
+        <div id="loading-progress-bar">
+          <div id="loading-progress-fill"></div>
+        </div>
+        <div id="loading-progress-text">0%</div>
+        <div id="producer-text">Produced by Weird Demon Games</div>
+        <button id="loading-start-btn" class="loading-start-btn">
+          START GAME
+        </button>
+      </div>
+    </div>
+
     <div id="landscape-warning">
       <div class="warning-content">
         <h2>Please Rotate Your Device</h2>
@@ -51,6 +66,8 @@
     </div>
 
     <!-- Load scripts -->
+    <script src="sprite-sheet.js"></script>
+    <script src="loading-screen.js"></script>
     <script src="config.js"></script>
     <script src="notifications.js"></script>
     <script src="trophy-manager.js"></script>
@@ -91,14 +108,36 @@
 
       // Initialize game on page load
       function initializeGame() {
-        // Load or create game state
-        gameState = initializeGameState();
+        // Show loading screen
+        loadingScreen.show();
 
-        // Initialize trophy system
-        initTrophyManager();
+        // Start preloading all assets
+        loadingScreen.preloadAllAssets().then(() => {
+          // Assets loaded, complete the loading screen
+          loadingScreen.complete(
+            () => {
+              // onComplete callback - runs when loading finishes (before button click)
+              console.log("Assets loaded successfully");
+            },
+            () => {
+              // onStart callback - runs when user clicks START GAME
+              // Check if this is first time playing
+              const hasPlayedBefore = localStorage.getItem("buffBrawlPlayed");
 
-        // Load title screen
-        loadTitleScreen();
+              if (!hasPlayedBefore) {
+                // First time playing - show story panels
+                localStorage.setItem("buffBrawlPlayed", "true");
+                storyPanel.open(() => {
+                  // After story, load the game
+                  startGame();
+                });
+              } else {
+                // Not first time - go straight to game
+                startGame();
+              }
+            }
+          );
+        });
 
         // Setup responsive scaling
         scaleGameContainer();
@@ -109,13 +148,29 @@
 
         // Auto-save on page unload
         window.addEventListener("beforeunload", () => {
-          saveGameState(gameState);
+          if (gameState) {
+            saveGameState(gameState);
+          }
         });
 
         // Auto-save periodically (every 30 seconds)
         setInterval(() => {
-          saveGameState(gameState);
+          if (gameState) {
+            saveGameState(gameState);
+          }
         }, 30000);
+      }
+
+      // Start the actual game (called after loading screen and optional story)
+      function startGame() {
+        // Load or create game state
+        gameState = initializeGameState();
+
+        // Initialize trophy system
+        initTrophyManager();
+
+        // Load title screen
+        loadTitleScreen();
       }
 
       // Start the game
