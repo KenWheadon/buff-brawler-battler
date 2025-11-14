@@ -57,21 +57,33 @@ function renderTrainingScreen(character, config, bonus, flippedCount, canLevelUp
 }
 
 function updateTrainingScreenElements(trainingScreen, character, config, bonus, flippedCount, canLevelUp) {
-    const nextFlipCost = flippedCount + 1;
-
     // Calculate current stats including card bonuses
     let totalHp = Math.floor(config.baseHp * bonus);
     let totalAttack = Math.floor(config.baseAttack * bonus);
     let totalDefense = Math.floor(config.baseDefense * bonus);
     let totalSpeed = Math.floor(config.baseSpeed * bonus);
 
+    // Track card bonuses separately for display
+    let cardAttackBonus = 0;
+    let cardDefenseBonus = 0;
+    let cardSpeedBonus = 0;
+
     // Add bonuses from flipped cards
     character.flippedCards.forEach((flipped, index) => {
         if (flipped && character.cardGrid[index].type === 'power') {
             const card = character.cardGrid[index];
-            if (card.stat === 'attack') totalAttack += card.value;
-            if (card.stat === 'defense') totalDefense += card.value;
-            if (card.stat === 'speed') totalSpeed += card.value;
+            if (card.stat === 'attack') {
+                totalAttack += card.value;
+                cardAttackBonus += card.value;
+            }
+            if (card.stat === 'defense') {
+                totalDefense += card.value;
+                cardDefenseBonus += card.value;
+            }
+            if (card.stat === 'speed') {
+                totalSpeed += card.value;
+                cardSpeedBonus += card.value;
+            }
         }
     });
 
@@ -80,19 +92,22 @@ function updateTrainingScreenElements(trainingScreen, character, config, bonus, 
     if (statsDisplay) {
         statsDisplay.innerHTML = `
             <div class="stat-item">HP: ${totalHp}</div>
-            <div class="stat-item">Attack: ${totalAttack}</div>
-            <div class="stat-item">Defense: ${totalDefense}</div>
-            <div class="stat-item">Speed: ${totalSpeed}</div>
+            <div class="stat-item">ATK: ${totalAttack}${cardAttackBonus > 0 ? ` <span style="color: #10b981;">(+${cardAttackBonus})</span>` : ''}</div>
+            <div class="stat-item">DEF: ${totalDefense}${cardDefenseBonus > 0 ? ` <span style="color: #10b981;">(+${cardDefenseBonus})</span>` : ''}</div>
+            <div class="stat-item">SPD: ${totalSpeed}${cardSpeedBonus > 0 ? ` <span style="color: #10b981;">(+${cardSpeedBonus})</span>` : ''}</div>
         `;
     }
 
-    // Update flip points
-    const flipPoints = trainingScreen.querySelector('.flip-points');
-    if (flipPoints) {
-        flipPoints.innerHTML = `
-            Flip Tokens: ${gameState.flipPoints}
-            ${flippedCount < 9 ? `<br><small>Next flip costs: ${nextFlipCost}</small>` : ''}
-        `;
+    // Update progress section
+    const progressSection = trainingScreen.querySelector('.training-info-section');
+    if (progressSection) {
+        const progressDiv = progressSection.querySelector('div');
+        if (progressDiv) {
+            progressDiv.innerHTML = `
+                Cards: ${flippedCount}/9 | Tokens: ${gameState.flipPoints}
+                ${canLevelUp ? '<br><span style="color: #10b981; font-weight: 900;">✓ Ready to Level Up!</span>' : `<br>Need ${GAME_CONFIG.cardsRequiredForLevelUp - flippedCount} more cards`}
+            `;
+        }
     }
 
     // Update individual cards (only update changed cards)
@@ -109,7 +124,7 @@ function updateTrainingScreenElements(trainingScreen, character, config, bonus, 
 
             if (card.type === 'blank') {
                 cardElement.classList.add('blank-card');
-                cardElement.innerHTML = '<span style="font-size: 48px; color: #000;">—</span>';
+                cardElement.innerHTML = '<span style="font-size: 40px; color: #000;">—</span>';
             } else {
                 const iconPath = card.stat === 'attack' ? 'images/icon-attack.png' :
                                  card.stat === 'defense' ? 'images/icon-defense.png' :
@@ -121,15 +136,6 @@ function updateTrainingScreenElements(trainingScreen, character, config, bonus, 
             }
         }
     });
-
-    // Update cards flipped counter
-    const cardsFlippedText = trainingScreen.querySelector('.text-center.mb-20');
-    if (cardsFlippedText) {
-        cardsFlippedText.innerHTML = `
-            Cards Flipped: ${flippedCount}/9
-            ${canLevelUp ? '<br><strong style="color: #28a745;">Ready to Level Up!</strong>' : ''}
-        `;
-    }
 
     // Update action buttons
     const trainingActions = trainingScreen.querySelector('.training-actions');
@@ -143,21 +149,33 @@ function updateTrainingScreenElements(trainingScreen, character, config, bonus, 
 }
 
 function renderFullTrainingScreen(container, character, config, bonus, flippedCount, canLevelUp) {
-    const nextFlipCost = flippedCount + 1;
-
     // Calculate current stats including card bonuses
     let totalHp = Math.floor(config.baseHp * bonus);
     let totalAttack = Math.floor(config.baseAttack * bonus);
     let totalDefense = Math.floor(config.baseDefense * bonus);
     let totalSpeed = Math.floor(config.baseSpeed * bonus);
 
+    // Track card bonuses separately for display
+    let cardAttackBonus = 0;
+    let cardDefenseBonus = 0;
+    let cardSpeedBonus = 0;
+
     // Add bonuses from flipped cards
     character.flippedCards.forEach((flipped, index) => {
         if (flipped && character.cardGrid[index].type === 'power') {
             const card = character.cardGrid[index];
-            if (card.stat === 'attack') totalAttack += card.value;
-            if (card.stat === 'defense') totalDefense += card.value;
-            if (card.stat === 'speed') totalSpeed += card.value;
+            if (card.stat === 'attack') {
+                totalAttack += card.value;
+                cardAttackBonus += card.value;
+            }
+            if (card.stat === 'defense') {
+                totalDefense += card.value;
+                cardDefenseBonus += card.value;
+            }
+            if (card.stat === 'speed') {
+                totalSpeed += card.value;
+                cardSpeedBonus += card.value;
+            }
         }
     });
 
@@ -167,7 +185,7 @@ function renderFullTrainingScreen(container, character, config, bonus, flippedCo
 
         if (flipped) {
             if (card.type === 'blank') {
-                cardContent = '<span style="font-size: 48px; color: #000;">—</span>';
+                cardContent = '<span style="font-size: 40px; color: #000;">—</span>';
             } else {
                 const iconPath = card.stat === 'attack' ? 'images/icon-attack.png' :
                                  card.stat === 'defense' ? 'images/icon-defense.png' :
@@ -192,38 +210,40 @@ function renderFullTrainingScreen(container, character, config, bonus, flippedCo
 
     container.innerHTML = `
         <div class="training-screen fade-in">
-            <h2>Training - ${config.name}</h2>
+            <h2>Training - ${config.name} (Lvl ${character.level})</h2>
 
             <div class="character-info">
-                <h3>${config.name} - Level ${character.level}</h3>
+                <img src="${config.images[character.level]}" alt="${config.name}" class="character-portrait" style="width: 100%; max-width: 200px; margin: 0 auto 12px; display: block;">
                 <div class="stats-display">
                     <div class="stat-item">HP: ${totalHp}</div>
-                    <div class="stat-item">Attack: ${totalAttack}</div>
-                    <div class="stat-item">Defense: ${totalDefense}</div>
-                    <div class="stat-item">Speed: ${totalSpeed}</div>
+                    <div class="stat-item">ATK: ${totalAttack}${cardAttackBonus > 0 ? ` <span style="color: #10b981;">(+${cardAttackBonus})</span>` : ''}</div>
+                    <div class="stat-item">DEF: ${totalDefense}${cardDefenseBonus > 0 ? ` <span style="color: #10b981;">(+${cardDefenseBonus})</span>` : ''}</div>
+                    <div class="stat-item">SPD: ${totalSpeed}${cardSpeedBonus > 0 ? ` <span style="color: #10b981;">(+${cardSpeedBonus})</span>` : ''}</div>
                 </div>
-                <div class="stat-item" style="margin-top: 10px;">
-                    Level Bonus: ${character.level === 1 ? 'None' : '+' + ((bonus - 1) * 100) + '%'}
+                <div class="training-info-section">
+                    <strong>📊 Progress</strong>
+                    <div style="margin: 4px 0; font-size: 13px;">
+                        Cards: ${flippedCount}/9 | Tokens: ${gameState.flipPoints}
+                        ${canLevelUp ? '<br><span style="color: #10b981; font-weight: 900;">✓ Ready to Level Up!</span>' : `<br>Need ${GAME_CONFIG.cardsRequiredForLevelUp - flippedCount} more cards`}
+                    </div>
                 </div>
-                <div style="margin-top: 15px;">
-                    <strong>Unlocked Moves:</strong><br>
-                    ${unlockedMoves.map(m => `• ${m.name} (${m.accuracy}%)`).join('<br>')}
+                <div class="training-info-section">
+                    <strong>⚔️ Moves (${unlockedMoves.length})</strong>
+                    <ul>
+                        ${unlockedMoves.map(m => `<li>• ${m.name} (${m.accuracy}%)</li>`).join('')}
+                    </ul>
                 </div>
-            </div>
-
-            <div class="flip-points">
-                Flip Tokens: ${gameState.flipPoints}
-                ${flippedCount < 9 ? `<br><small>Next flip costs: ${nextFlipCost}</small>` : ''}
+                <div class="training-info-section" style="border-bottom: 2px solid #000; padding-bottom: 8px;">
+                    <strong>💡 Tip</strong>
+                    <div style="font-size: 11px; line-height: 1.3;">
+                        Flip cost increases each time (1→2→3...). Power cards give stat bonuses!
+                    </div>
+                </div>
             </div>
 
             <div class="card-grid">
                 ${cardsHTML}
             </div>
-
-            <p class="text-center mb-20">
-                Cards Flipped: ${flippedCount}/9
-                ${canLevelUp ? '<br><strong style="color: #28a745;">Ready to Level Up!</strong>' : ''}
-            </p>
 
             <div class="training-actions">
                 <button class="btn btn-secondary" onclick="exitTraining()">Back</button>
@@ -248,7 +268,7 @@ function flipCard(cardIndex) {
 
     // Check if enough flip points
     if (gameState.flipPoints < flipCost) {
-        alert(`Not enough flip tokens! Need ${flipCost}, have ${gameState.flipPoints}`);
+        showError('Not Enough Tokens!', `You need ${flipCost} flip tokens but only have ${gameState.flipPoints}.`);
         return;
     }
 
@@ -256,24 +276,41 @@ function flipCard(cardIndex) {
     character.flippedCards[cardIndex] = true;
     gameState.flipPoints -= flipCost;
 
+    // Get the card that was flipped
+    const card = character.cardGrid[cardIndex];
+
     // Save game state
     saveGameState(gameState);
 
     // Re-render
     loadTrainingScreen();
+
+    // Show feedback based on what was flipped
+    setTimeout(() => {
+        if (card.type === 'blank') {
+            showInfo('❌ Blank Card! No bonus gained.', 2000);
+        } else {
+            const statName = card.stat.charAt(0).toUpperCase() + card.stat.slice(1);
+            showSuccess(
+                '✨ Power Card!',
+                `<strong>+${card.value} ${statName}</strong> added to your stats!`,
+                2500
+            );
+        }
+    }, 300);
 }
 
 function levelUpCharacter() {
     const character = gameState.selectedCharacter;
 
     if (character.level >= GAME_CONFIG.maxLevel) {
-        alert('Character is already max level!');
+        showWarning('Max Level Reached', 'This character is already at maximum level!');
         return;
     }
 
     const flippedCount = character.flippedCards.filter(f => f).length;
     if (flippedCount < GAME_CONFIG.cardsRequiredForLevelUp) {
-        alert('Need at least 6 cards flipped to level up!');
+        showWarning('Cannot Level Up', `You need at least ${GAME_CONFIG.cardsRequiredForLevelUp} cards flipped to level up!<br>Current: ${flippedCount}/${GAME_CONFIG.cardsRequiredForLevelUp}`);
         return;
     }
 
@@ -285,10 +322,16 @@ function levelUpCharacter() {
     character.cardGrid = generateCardGrid();
 
     const config = GAME_CONFIG.characters.find(c => c.id === character.id);
-    alert(`${config.name} leveled up to Level ${character.level}! New move unlocked: ${config.moves[character.level - 1].name}`);
 
-    // Save game state
+    // Save game state first
     saveGameState(gameState);
+
+    // Show celebration notification
+    showSuccess(
+        'Level Up!',
+        `<strong>${config.name}</strong> leveled up to Level ${character.level}!<br><br>New move unlocked: <strong>${config.moves[character.level - 1].name}</strong>`,
+        0  // Don't auto-close, require button click
+    );
 
     // Re-render
     loadTrainingScreen();

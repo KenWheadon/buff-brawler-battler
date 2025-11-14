@@ -27,8 +27,33 @@
       <div id="game-container"></div>
     </div>
 
+    <!-- Story Panel Overlay -->
+    <div id="overlay" style="display: none;"></div>
+
+    <!-- Story Panel -->
+    <div id="story-panel" style="display: none;">
+      <div id="story-panel-content">
+        <div id="story-panel-image">
+          <img id="story-img" src="images/story1.jpg" alt="Story Panel" />
+        </div>
+        <div id="story-panel-text">
+          <p id="story-text">Story text will appear here...</p>
+        </div>
+        <div id="story-panel-pagination">
+          <span id="story-page-indicator">1 / 8</span>
+        </div>
+        <div id="story-panel-controls">
+          <button id="story-back-btn" class="story-nav-btn">← Back</button>
+          <button id="story-skip-btn" class="story-action-btn">Skip</button>
+          <button id="story-next-btn" class="story-nav-btn">Next →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Load scripts -->
     <script src="config.js"></script>
+    <script src="notifications.js"></script>
+    <script src="story-panel.js"></script>
     <script src="title-screen.js"></script>
     <script src="character-gallery.js"></script>
     <script src="training-screen.js"></script>

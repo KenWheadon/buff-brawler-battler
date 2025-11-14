@@ -13,6 +13,22 @@ let combatState = {
 };
 
 // Animation helper functions
+function highlightSelectedAttack(moveIndex) {
+    return new Promise(resolve => {
+        const moveButtons = document.querySelectorAll('.move-btn');
+        const selectedButton = moveButtons[moveIndex];
+        if (!selectedButton) {
+            resolve();
+            return;
+        }
+        selectedButton.classList.add('selected-attack');
+        setTimeout(() => {
+            selectedButton.classList.remove('selected-attack');
+            resolve();
+        }, 500);
+    });
+}
+
 function wiggleElement(selector) {
     return new Promise(resolve => {
         const element = document.querySelector(selector);
@@ -121,7 +137,14 @@ function loadCombatScreen() {
     }
 
     // Initialize combat state
-    combatState.playerHp = playerStats.hp;
+    // Only reset player HP at the start of a new run (wave 1), preserve HP between waves
+    if (!gameState.currentWave || gameState.currentWave === 1) {
+        combatState.playerHp = playerStats.hp;
+    }
+    // If continuing from a previous wave, keep existing HP but cap at max HP
+    else {
+        combatState.playerHp = Math.min(combatState.playerHp, playerStats.hp);
+    }
     combatState.monsterHp = monster.hp;
     combatState.playerStats = playerStats;
     combatState.monsterStats = {
@@ -407,6 +430,9 @@ async function useMove(moveIndex) {
     const monster = gameState.currentMonster;
     const config = GAME_CONFIG.characters.find(c => c.id === character.id);
     const move = config.moves[moveIndex];
+
+    // Show selected attack animation
+    await highlightSelectedAttack(moveIndex);
 
     // Check accuracy
     const roll = Math.random() * 100;

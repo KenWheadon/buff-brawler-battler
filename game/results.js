@@ -149,10 +149,21 @@ function captureMonster() {
 
     if (bearChar && !bearChar.unlocked) {
         bearChar.unlocked = true;
-        alert('You captured the Bear Boss and unlocked Bear as a playable character!');
 
         // Save game state
         saveGameState(gameState);
+
+        // Show celebration notification
+        showSuccess(
+            'Character Unlocked!',
+            'You captured the Bear Boss and unlocked <strong>Bear</strong> as a playable character!<br><br>Check the character gallery to train and play as Bear!',
+            0  // Don't auto-close, require button click
+        );
+
+        // Delay returning to menu until notification is dismissed
+        setTimeout(() => {
+            // The notification OK button will handle the timing
+        }, 100);
     }
 
     // End the run

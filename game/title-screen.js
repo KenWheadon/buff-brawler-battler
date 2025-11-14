@@ -32,6 +32,7 @@ function loadTitleScreen() {
 
             <div class="button-group">
                 <button class="btn btn-primary" onclick="startRun()">Start Run</button>
+                <button class="btn btn-secondary" onclick="viewStory()">View Story</button>
             </div>
             <div style="margin-top: 20px; font-size: 12px; color: #888;">
                 Flip Tokens: ${gameState.flipPoints}
@@ -53,4 +54,11 @@ function startRun() {
   };
 
   loadCombatScreen();
+}
+
+function viewStory() {
+  // Open the story panel
+  if (storyPanel) {
+    storyPanel.replay();
+  }
 }
